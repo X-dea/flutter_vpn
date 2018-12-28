@@ -1,8 +1,8 @@
 name: flutter_vpn
 description: Flutter plugin for VPN service
 version: 0.0.1
-author: Jason C.H
-homepage:
+author: Jason C.H <ctrysbita@outlook.com>
+homepage: https://github.com/X-dea/Flutter_VPN
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
