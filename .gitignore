@@ -1,0 +1,10 @@
+.idea
+.DS_Store
+.dart_tool/
+
+.packages
+.pub/
+pubspec.lock
+
+build/
+android/src/main/libs
