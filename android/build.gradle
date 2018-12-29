@@ -11,7 +11,29 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'de.undercouch:gradle-download-task:3.4.3'
     }
+}
+
+apply plugin: 'de.undercouch.download'
+
+// Download pre-build native libs.
+task downloadNaticeLib(type: Download) {
+    src 'https://github.com/X-dea/Flutter_VPN/releases/download/v0.0.1/strongswan_libs_v5.7.2.zip'
+    dest "$buildDir/native.zip"
+}
+
+task getNativeFile(dependsOn: downloadNaticeLib, type: Copy) {
+    from zipTree("$buildDir/native.zip")
+    into "src/main/libs"
+}
+
+// Automatically download native libs before build when doesn't exist.
+tasks.whenTaskAdded {
+    task ->
+        if (task.name == "preBuild" && !(file('./src/main/libs').exists())) {
+            preBuild.dependsOn getNativeFile
+        }
 }
 
 rootProject.allprojects {
@@ -34,7 +56,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 16
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     lintOptions {

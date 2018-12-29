@@ -1,4 +1,2 @@
 ## 0.0.1
-
-No release yet.
-Still under development.
+Provide simplest IkeV2-eap VPN service.

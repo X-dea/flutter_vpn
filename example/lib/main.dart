@@ -57,7 +57,7 @@ class _MyAppState extends State<MyApp> {
             ),
             RaisedButton(
               child: Text('Connect'),
-              onPressed: () => FlutterVpn.connect(
+              onPressed: () => FlutterVpn.simpleConnect(
                     _addressController.text,
                     _usernameController.text,
                     _passwordController.text,

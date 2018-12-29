@@ -19,16 +19,26 @@ import 'package:flutter/services.dart';
 class FlutterVpn {
   static const MethodChannel _channel = const MethodChannel('flutter_vpn');
 
+  /// Prepare for vpn connection.
+  ///
+  /// For first connection it will show a dialog to ask for permission.
+  /// When your connection was interrupted by another VPN connection,
+  /// you should prepare again before reconnection.
   static Future<bool> prepare() async {
     return await _channel.invokeMethod('prepare');
   }
 
-  static Future<Null> connect(
+  /// Connect to VPN.
+  ///
+  /// Use given credentials to connect VPN (ikev2-eap).
+  /// This will create a background VPN service.
+  static Future<Null> simpleConnect(
       String address, String username, String password) async {
     await _channel.invokeMethod('connect',
         {'address': address, 'username': username, 'password': password});
   }
 
+  /// Disconnect will stop current VPN service.
   static Future<Null> disconnect() async {
     await _channel.invokeMethod('disconnect');
   }

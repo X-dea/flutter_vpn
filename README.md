@@ -24,8 +24,22 @@ Add the service in the `application` part your `AndroidManifest.xml`.
         android:permission="android.permission.BIND_VPN_SERVICE"/>
 </application>
 ```
+Modify your `app/build.gradle` to use Java 8 and avoid [#22397](https://github.com/flutter/flutter/issues/22397).
+```gradle
+android {
+    ...
+    lintOptions {
+        ...
+        // To avoid error.
+        checkReleaseBuilds false
+    }
 
-Add native libs inside your `android/app/src/main/libs` .  
-The native libs can be build from strongswan. 
-You can also download the prebuild native libs [here](https://github.com/X-dea/Flutter_VPN/releases).
+    // Plugin requires Java 8.
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
+}
+```
+The plugin will automatically download pre-build native libraries from [here](https://github.com/X-dea/Flutter_VPN/releases) if they haven't been downloaded.
 
