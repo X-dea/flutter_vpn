@@ -1,13 +1,14 @@
 # Flutter VPN plugin
 
-This plugin help developers to provide VPN service in their flutter app.  
-本插件帮助开发者在自己的应用内提供 VPN 服务。
+This plugin help developers to access VPN service in their flutter app.  
+本插件帮助开发者在自己的应用内调用 VPN 服务。
 
 The Android part was implemented by [strongswan](https://www.strongswan.org/) which support ikev2 protocol.  
 The iOS part not implemented yet.
 
 ### Warning
-This plugin is still under initial development. DO NOT use in production.
+This plugin is still under initial development.  
+Issues and PRs are welcome!
 
 ## Installation
 
@@ -42,4 +43,3 @@ android {
 }
 ```
 The plugin will automatically download pre-build native libraries from [here](https://github.com/X-dea/Flutter_VPN/releases) if they haven't been downloaded.
-
