@@ -1,3 +1,17 @@
+/**
+ * Copyright (C) 2018 Jason C.H
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
 package io.xdea.fluttervpn
 
 import android.app.Activity.RESULT_OK
@@ -5,6 +19,7 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -22,16 +37,20 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
   companion object {
     @JvmStatic
     fun registerWith(registrar: Registrar) {
-      // Register method channel
+      // Register method channel.
       val channel = MethodChannel(registrar.messenger(), "flutter_vpn")
       channel.setMethodCallHandler(FlutterVpnPlugin(registrar))
+
+      // Register event channel to handle state change.
+      val eventChannel = EventChannel(registrar.messenger(), "flutter_vpn_states")
+      eventChannel.setStreamHandler(VPNStateHandler())
     }
 
     fun onPrepareResult(requestCode: Int, resultCode: Int, result: Result): Boolean {
       if (requestCode == 0 && resultCode == RESULT_OK)
         result.success(true)
       else
-        result.error("error", "Failed to prepare", false)
+        result.error("PrepareError", "Failed to prepare", false)
       return true
     }
   }
@@ -43,15 +62,15 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
         val intent = VpnService.prepare(registrar.activeContext())
         if (intent != null) {
           registrar.addActivityResultListener { req, res, _ -> onPrepareResult(req, res, result) }
-
           registrar.activity().startActivityForResult(intent, 0)
-
         }
       }
       "connect" -> {
         val intent = VpnService.prepare(registrar.activeContext())
-        if (intent != null)
-          result.error("error", "Not prepared", false)
+        if (intent != null) {
+          result.error("PrepareError", "Not prepared", false)
+          return
+        }
         val map = call.arguments as HashMap<String, String>
         val address = map["address"]
         val username = map["username"]
@@ -69,15 +88,12 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
 
   private fun connect(address: String?, username: String?, password: String?) {
     val profileInfo = Bundle()
-    profileInfo.putString("_uuid", "be869700-4ad4-4215-8453-619a1472b384")
+    profileInfo.putString("address", address)
     profileInfo.putString("username", username)
     profileInfo.putString("password", password)
-    profileInfo.putBoolean("REQUIRES_PASSWORD", true)
-    profileInfo.putString("PROFILE_NAME", address)
-    /* we assume we have the necessary permission */
-    val intent = Intent(registrar.activeContext(), CharonVpnService::class.java)
 
-    intent.putExtras(profileInfo)
+    val intent = Intent(registrar.activeContext(), CharonVpnService::class.java)
+            .putExtras(profileInfo)
     ContextCompat.startForegroundService(registrar.activeContext(), intent)
   }
 
@@ -92,6 +108,4 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
     intent.action = CharonVpnService.DISCONNECT_ACTION
     registrar.activeContext().startService(intent)
   }
-
-
 }

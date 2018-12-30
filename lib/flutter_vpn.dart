@@ -16,14 +16,52 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
+const _channel = const MethodChannel('flutter_vpn');
+const _eventChannel = const EventChannel('flutter_vpn_states');
+
+enum FlutterVpnState {
+  up,
+  down,
+  authError,
+  peerAuthError,
+  lookUpError,
+  unreachableError,
+  certificateUnavailable,
+  genericError
+}
+
 class FlutterVpn {
-  static const MethodChannel _channel = const MethodChannel('flutter_vpn');
+  /// Receive state change from charon VPN service.
+  ///
+  /// Can only be listened once.
+  /// If more than one, only the last subscription will receive events.
+  static Stream<FlutterVpnState> get onStateChanged =>
+      _eventChannel.receiveBroadcastStream().map((event) {
+        switch (event) {
+          case 1:
+            return FlutterVpnState.up;
+          case 2:
+            return FlutterVpnState.down;
+          case 3:
+            return FlutterVpnState.authError;
+          case 4:
+            return FlutterVpnState.peerAuthError;
+          case 5:
+            return FlutterVpnState.lookUpError;
+          case 6:
+            return FlutterVpnState.unreachableError;
+          case 7:
+            return FlutterVpnState.certificateUnavailable;
+          case 8:
+            return FlutterVpnState.genericError;
+        }
+      });
 
   /// Prepare for vpn connection.
   ///
   /// For first connection it will show a dialog to ask for permission.
   /// When your connection was interrupted by another VPN connection,
-  /// you should prepare again before reconnection.
+  /// you should prepare again before reconnect.
   static Future<bool> prepare() async {
     return await _channel.invokeMethod('prepare');
   }

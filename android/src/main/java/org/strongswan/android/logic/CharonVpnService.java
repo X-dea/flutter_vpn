@@ -56,6 +56,9 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.UUID;
 
+import io.flutter.plugin.common.EventChannel;
+import io.xdea.fluttervpn.VPNStateHandler;
+
 
 public class CharonVpnService extends VpnService implements Runnable {
     private static final String NOTIFICATION_CHANNEL = "org.strongswan.android.CharonVpnService.VPN_STATE_NOTIFICATION";
@@ -110,12 +113,12 @@ public class CharonVpnService extends VpnService implements Runnable {
             Bundle bundle = intent.getExtras();
             VpnProfile profile = new VpnProfile();
             profile.setId(1);
-            profile.setUUID(UUID.fromString(bundle.getString("_uuid")));
-            profile.setName(bundle.getString("PROFILE_NAME"));
-            profile.setGateway(bundle.getString("PROFILE_NAME"));
-            profile.setVpnType(VpnType.fromIdentifier("ikev2-eap"));
+            profile.setUUID(UUID.randomUUID());
+            profile.setName(bundle.getString("address"));
+            profile.setGateway(bundle.getString("address"));
             profile.setUsername(bundle.getString("username"));
             profile.setPassword(bundle.getString("password"));
+            profile.setVpnType(VpnType.fromIdentifier("ikev2-eap"));
             profile.setSelectedAppsHandling(0);
             profile.setFlags(0);
             setNextProfile(profile);
@@ -226,6 +229,11 @@ public class CharonVpnService extends VpnService implements Runnable {
     public void updateStatus(int status) {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.notify(1, buildNotification());
+
+        // Update state through event channel.
+        EventChannel.EventSink sink = VPNStateHandler.Companion.getEventHandler();
+        if(sink != null)
+            sink.success(status);
     }
 
     /**

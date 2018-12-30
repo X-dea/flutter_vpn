@@ -27,9 +27,12 @@ class _MyAppState extends State<MyApp> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  var state = FlutterVpnState.down;
+
   @override
   void initState() {
     FlutterVpn.prepare();
+    FlutterVpn.onStateChanged.listen((s) => setState(() => state = s));
     super.initState();
   }
 
@@ -43,6 +46,7 @@ class _MyAppState extends State<MyApp> {
         body: ListView(
           padding: const EdgeInsets.all(15.0),
           children: <Widget>[
+            Text('Current State: $state'),
             TextFormField(
               controller: _addressController,
               decoration: InputDecoration(icon: Icon(Icons.map)),
@@ -53,6 +57,7 @@ class _MyAppState extends State<MyApp> {
             ),
             TextFormField(
               controller: _passwordController,
+              obscureText: true,
               decoration: InputDecoration(icon: Icon(Icons.lock_outline)),
             ),
             RaisedButton(
