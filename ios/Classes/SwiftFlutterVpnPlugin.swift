@@ -9,7 +9,7 @@ public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
     channel.setMethodCallHandler({
             (call: FlutterMethodCall, result: FlutterResult) -> Void in
             if ("connect" == call.method) {
-                connectVPN(result: result, usrname: call.arguments['username'], pwd: call.arguments['password'], add: call.arguments['address'])
+                connectVPN(result: result, usrname: call.arguments["username"], pwd: call.arguments["password"], add: call.arguments["address"])
             } else if ("disconnect" == call.method) {
                 stopVPN(result: result)
             }
