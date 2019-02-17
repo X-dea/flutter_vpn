@@ -65,7 +65,7 @@ class KeychainService: NSObject {
     }
 }
 
-
+@available(iOS 9.0, *)
 func connectVPN(result: FlutterResult, usrname: NSString, pwd: NSString, add: NSString){
     let vpnManager = NEVPNManager.shared()
     let kcs = KeychainService()
@@ -79,11 +79,11 @@ func connectVPN(result: FlutterResult, usrname: NSString, pwd: NSString, add: NS
             let p = NEVPNProtocolIKEv2()
 
             
-            p.username = usrname
-            p.remoteIdentifier = add
-            p.serverAddress = add
+            p.username = usrname as String
+            p.remoteIdentifier = add as String
+            p.serverAddress = add as String
             
-            kcs.save(key: "password", value: pwd)
+            kcs.save(key: "password", value: pwd as String)
             p.passwordReference = kcs.load(key: "password")
             p.authenticationMethod = NEVPNIKEAuthenticationMethod.none
             
