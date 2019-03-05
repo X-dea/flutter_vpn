@@ -43,3 +43,9 @@ android {
 }
 ```
 The plugin will automatically download pre-build native libraries from [here](https://github.com/X-dea/Flutter_VPN/releases) if they haven't been downloaded.
+
+### For iOS
+
+You need to open `Personal VPN` and `Network Extensions` capabilities in Project->Capabilities. 
+
+VPN connection errors are handled in swift code, you need to use Xcode to see connection errors if there is any. 

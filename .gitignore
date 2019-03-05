@@ -8,3 +8,10 @@ pubspec.lock
 
 build/
 android/src/main/libs
+example/ios/Flutter/Debug.xcconfig
+example/ios/Flutter/Release.xcconfig
+example/ios/Podfile
+example/ios/Runner.xcodeproj/project.pbxproj
+example/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+example/ios/Runner.xcworkspace/contents.xcworkspacedata
+example/ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
