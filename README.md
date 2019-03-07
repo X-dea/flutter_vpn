@@ -4,10 +4,10 @@ This plugin help developers to access VPN service in their flutter app.
 本插件帮助开发者在自己的应用内调用 VPN 服务。
 
 The Android part was implemented by [strongswan](https://www.strongswan.org/) which support ikev2 protocol.  
-The iOS part not implemented yet.
+The iOS part was implemented by NEVPNManager. (Preview)
 
 ### Warning
-This plugin is still under initial development.  
+This plugin is still under initial development.
 Issues and PRs are welcome!
 
 ## Installation
@@ -46,6 +46,6 @@ The plugin will automatically download pre-build native libraries from [here](ht
 
 ### For iOS
 
-You need to open `Personal VPN` and `Network Extensions` capabilities in Project->Capabilities. 
+You need to open `Personal VPN` and `Network Extensions` capabilities in Xcode: see Project->Capabilities.
 
-VPN connection errors are handled in swift code, you need to use Xcode to see connection errors if there is any. 
+VPN connection errors are handled in swift code, you need to use Xcode to see connection errors if there is any.
