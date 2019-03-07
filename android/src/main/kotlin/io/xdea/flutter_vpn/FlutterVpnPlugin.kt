@@ -18,7 +18,7 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.VpnService
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel

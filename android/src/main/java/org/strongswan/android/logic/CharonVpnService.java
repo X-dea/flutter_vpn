@@ -28,7 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import android.system.OsConstants;
 import android.util.Log;
 
@@ -265,7 +265,7 @@ public class CharonVpnService extends VpnService implements Runnable {
      */
     private Notification buildNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
-                .setSmallIcon(android.support.v7.appcompat.R.drawable.abc_ic_star_black_36dp)
+                .setSmallIcon(androidx.appcompat.R.drawable.abc_ic_star_black_36dp)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
         builder.setContentTitle("VPN Connected");
