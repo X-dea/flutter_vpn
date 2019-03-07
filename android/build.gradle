@@ -1,23 +1,24 @@
-group 'io.xdea.fluttervpn'
+group 'io.xdea.flutter_vpn'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.2.71'
+    ext.kotlin_version = '1.3.20'
     repositories {
         google()
         jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // For downloading prebuilt libs
         classpath 'de.undercouch:gradle-download-task:3.4.3'
     }
 }
 
 apply plugin: 'de.undercouch.download'
 
-// Download pre-build native libs.
+// Download prebuilt native libs.
 task downloadNaticeLib(type: Download) {
     src 'https://github.com/X-dea/Flutter_VPN/releases/download/v0.0.2/strongswan_libs_v5.7.2.zip'
     dest "$buildDir/native.zip"

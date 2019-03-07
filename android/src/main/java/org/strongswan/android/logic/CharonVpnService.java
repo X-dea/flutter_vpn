@@ -57,7 +57,7 @@ import java.util.SortedSet;
 import java.util.UUID;
 
 import io.flutter.plugin.common.EventChannel;
-import io.xdea.fluttervpn.VPNStateHandler;
+import io.xdea.flutter_vpn.VPNStateHandler;
 
 
 public class CharonVpnService extends VpnService implements Runnable {

@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  */
 
-package io.xdea.fluttervpn
+package io.xdea.flutter_vpn
 
 import io.flutter.plugin.common.EventChannel
 

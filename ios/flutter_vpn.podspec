@@ -3,10 +3,10 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_vpn'
-  s.version          = '0.0.1'
-  s.summary          = 'Flutter plugin to provide vpn service.'
+  s.version          = '0.1.0'
+  s.summary          = 'Flutter plugin to access vpn service.'
   s.description      = <<-DESC
-Flutter plugin to provide vpn service.
+Flutter plugin to access vpn service.
                        DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }

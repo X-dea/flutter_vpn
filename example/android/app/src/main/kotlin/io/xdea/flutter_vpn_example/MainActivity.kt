@@ -1,4 +1,4 @@
-package io.xdea.fluttervpnexample
+package io.xdea.flutter_vpn_example
 
 import android.os.Bundle
 

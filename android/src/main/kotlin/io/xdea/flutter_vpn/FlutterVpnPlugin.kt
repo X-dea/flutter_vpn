@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  */
 
-package io.xdea.fluttervpn
+package io.xdea.flutter_vpn
 
 import android.app.Activity.RESULT_OK
 import android.content.Intent
