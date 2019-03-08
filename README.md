@@ -13,7 +13,9 @@ Issues and PRs are welcome!
 ## Installation
 
 ### For Android
+No need to do anything with latest flutter SDK.  
 
+#### Deprecated
 Add the service in the `application` part your `AndroidManifest.xml`.
 ```xml
 <application

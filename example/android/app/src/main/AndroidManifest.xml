@@ -35,7 +35,5 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name="org.strongswan.android.logic.CharonVpnService"
-            android:permission="android.permission.BIND_VPN_SERVICE"/>
     </application>
 </manifest>
