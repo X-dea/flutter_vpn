@@ -1,3 +1,12 @@
+## 0.1.0
+### Support `arm64-v8a` for android
+We have added the libraries for `arm64-v8a`.
+Please follow `README` to configure abiFilter for NDK.
+### Migrate to AndroidX
+**Breaking Change**
+Migrate from the deprecated original Android Support Library to AndroidX. This shouldn't result in any functional changes, but it requires any Android apps using this plugin to also migrate if they're using the original support library.  
+Follow [Official documents](https://developer.android.com/jetpack/androidx/migrate) to migrate.
+
 ## 0.0.4
 Add iOS support without status broadcast.
 
