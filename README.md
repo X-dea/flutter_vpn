@@ -13,34 +13,24 @@ Issues and PRs are welcome!
 ## Installation
 
 ### For Android
-No need to do anything with latest flutter SDK.  
 
-#### Deprecated
-Add the service in the `application` part your `AndroidManifest.xml`.
-```xml
-<application
-        ...
-    <activity
-        ...
-    </activity>
-    <service android:name="org.strongswan.android.logic.CharonVpnService"
-        android:permission="android.permission.BIND_VPN_SERVICE"/>
-</application>
-```
-Modify your `app/build.gradle` to use Java 8 and avoid [#22397](https://github.com/flutter/flutter/issues/22397).
+Modify your `app/build.gradle` to use abiFilter because flutter doesn't support multi-architecture in single apk [#18494](https://github.com/flutter/flutter/issues/18494).
 ```gradle
 android {
     ...
-    lintOptions {
+    buildTypes {
         ...
-        // To avoid error.
-        checkReleaseBuilds false
-    }
-
-    // Plugin requires Java 8.
-    compileOptions {
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
+        release {
+            ...
+            ndk {
+                    if (project.hasProperty('target-platform') &&
+                            project.property('target-platform') == 'android-arm64') {
+                        abiFilters 'arm64-v8a'
+                    } else {
+                        abiFilters 'armeabi-v7a'
+                    }
+                }
+            }
     }
 }
 ```

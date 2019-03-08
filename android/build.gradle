@@ -20,7 +20,7 @@ apply plugin: 'de.undercouch.download'
 
 // Download prebuilt native libs.
 task downloadNaticeLib(type: Download) {
-    src 'https://github.com/X-dea/Flutter_VPN/releases/download/v0.0.2/strongswan_libs_v5.7.2.zip'
+    src 'https://github.com/X-dea/Flutter_VPN/releases/download/v0.0.5/strongswan_libs_v5.7.2.zip'
     dest "$buildDir/native.zip"
 }
 

@@ -1,7 +1,9 @@
 name: flutter_vpn
 description: Plugin for developers to access VPN service in their flutter app.
-version: 0.0.4
-author: Jason C.H <ctrysbita@outlook.com>
+version: 0.0.5
+author:
+  - Jason C.H <ctrysbita@outlook.com>
+  - Jerry
 homepage: https://github.com/X-dea/Flutter_VPN
 
 environment:
