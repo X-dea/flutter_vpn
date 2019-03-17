@@ -227,13 +227,12 @@ public class CharonVpnService extends VpnService implements Runnable {
      * @param status new state
      */
     public void updateStatus(int status) {
+        // Update state for notification.
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         manager.notify(1, buildNotification());
 
-        // Update state through event channel.
-        EventChannel.EventSink sink = VPNStateHandler.Companion.getEventHandler();
-        if(sink != null)
-            sink.success(status);
+        // Update state for handler.
+        VPNStateHandler.Companion.updateState(status);
     }
 
     /**

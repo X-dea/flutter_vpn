@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  var state = FlutterVpnState.down;
+  var state = FlutterVpnState.disconnected;
 
   @override
   void initState() {

@@ -17,6 +17,7 @@ package io.xdea.flutter_vpn
 import io.flutter.plugin.common.EventChannel
 
 /*
+  States for Charon VPN service.
 	STATE_CHILD_SA_UP = 1;
 	STATE_CHILD_SA_DOWN = 2;
 	STATE_AUTH_ERROR = 3;
@@ -25,6 +26,14 @@ import io.flutter.plugin.common.EventChannel
 	STATE_UNREACHABLE_ERROR = 6;
 	STATE_CERTIFICATE_UNAVAILABLE = 7;
 	STATE_GENERIC_ERROR = 8;
+
+	States for Flutter VPN plugin.
+	These states will be sent to event channel / getStatus.
+	DISCONNECTED = 0;
+	CONNECTING = 1;
+	CONNECTED = 2;
+	DISCONNECTING = 3;
+	GENERIC_ERROR = 4;
  */
 
 class VPNStateHandler : EventChannel.StreamHandler {
@@ -34,9 +43,24 @@ class VPNStateHandler : EventChannel.StreamHandler {
      * The charon VPN service will update state through the sink if not `null`.
      */
     var eventHandler: EventChannel.EventSink? = null
+    var currentCharonState = 0
+    var currentState = 0
+
+    fun updateState(newCharonState: Int) {
+      currentCharonState = newCharonState
+
+      // Map Charon state to Normal state.
+      when (newCharonState) {
+        1 -> currentState = 2
+        2 -> currentState = 0
+        else -> currentState = 4
+      }
+
+      eventHandler?.success(currentState)
+    }
   }
 
-  override fun onListen(p0: Any?, sink: EventChannel.EventSink?) {
+  override fun onListen(p0: Any?, sink: EventChannel.EventSink) {
     eventHandler = sink
   }
 

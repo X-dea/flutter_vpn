@@ -48,7 +48,7 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
 
     fun onPrepareResult(requestCode: Int, resultCode: Int, result: Result): Boolean {
       if (requestCode == 0 && resultCode == RESULT_OK)
-        result.success(true)
+        result.success(null)
       else
         result.error("PrepareError", "Failed to prepare", false)
       return true
@@ -71,6 +71,7 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
           result.error("PrepareError", "Not prepared", false)
           return
         }
+        VPNStateHandler.updateState(1)
         val map = call.arguments as HashMap<String, String>
         val address = map["address"]
         val username = map["username"]
@@ -78,7 +79,11 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
         connect(address, username, password)
         result.success(null)
       }
+      "getCurrentState" -> {
+        result.success(VPNStateHandler.currentState)
+      }
       "disconnect" -> {
+        VPNStateHandler.updateState(3)
         disconnect()
         result.success(null)
       }
