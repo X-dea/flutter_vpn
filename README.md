@@ -7,7 +7,7 @@ The Android part was implemented by [strongswan](https://www.strongswan.org/) wh
 The iOS part was implemented by NEVPNManager. (Preview)
 
 ### Warning
-This plugin is still under initial development.
+This plugin is still under development.
 Issues and PRs are welcome!
 
 ## Installation
