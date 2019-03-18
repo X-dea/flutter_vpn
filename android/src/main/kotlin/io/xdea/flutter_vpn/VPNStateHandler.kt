@@ -43,10 +43,10 @@ class VPNStateHandler : EventChannel.StreamHandler {
      * The charon VPN service will update state through the sink if not `null`.
      */
     var eventHandler: EventChannel.EventSink? = null
-    var currentCharonState = 0
+    var currentCharonState = 2
     var currentState = 0
 
-    fun updateState(newCharonState: Int) {
+    fun updateCharonState(newCharonState: Int) {
       currentCharonState = newCharonState
 
       // Map Charon state to Normal state.
@@ -56,6 +56,11 @@ class VPNStateHandler : EventChannel.StreamHandler {
         else -> currentState = 4
       }
 
+      eventHandler?.success(currentState)
+    }
+
+    fun updateState(newState: Int) {
+      currentState = newState
       eventHandler?.success(currentState)
     }
   }

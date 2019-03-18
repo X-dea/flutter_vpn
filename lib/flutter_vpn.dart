@@ -48,20 +48,21 @@ class FlutterVpn {
   /// If have more than one subscription, only the last subscription can receive
   /// events.
   static Stream<FlutterVpnState> get onStateChanged =>
-      _eventChannel.receiveBroadcastStream().map((event) {
-        switch (event) {
-          case 0:
-            return FlutterVpnState.disconnected;
-          case 1:
-            return FlutterVpnState.connecting;
-          case 2:
-            return FlutterVpnState.connected;
-          case 3:
-            return FlutterVpnState.disconnecting;
-          default:
-            return FlutterVpnState.genericError;
-        }
-      });
+      _eventChannel.receiveBroadcastStream().map((e) => _mapState(e));
+
+  /// Get current state.
+  static Future<FlutterVpnState> get currentState async {
+    var currentState = await _channel.invokeMethod('getCurrentState');
+    return _mapState(currentState);
+  }
+
+  /// Get current state from `CharonVpnService`.
+  /// Only available for Android devices.
+  static Future<CharonVpnState> get currentCharonState async {
+    if (!Platform.isAndroid) throw Exception('Unsupport Platform');
+    var currentState = await _channel.invokeMethod('getCharonState');
+    return _mapCharonState(currentState);
+  }
 
   /// Prepare for vpn connection. (Android only)
   ///
@@ -85,10 +86,14 @@ class FlutterVpn {
         {'address': address, 'username': username, 'password': password});
   }
 
-  /// Get current state.
-  static Future<FlutterVpnState> get currentState async {
-    var currentState = await _channel.invokeMethod('getCurrentState');
-    switch (currentState) {
+  /// Disconnect will stop current VPN service.
+  static Future<Null> disconnect() async {
+    await _channel.invokeMethod('disconnect');
+  }
+
+  /// Map state code to `FlutterVpnState`.
+  static FlutterVpnState _mapState(int state) {
+    switch (state) {
       case 0:
         return FlutterVpnState.disconnected;
       case 1:
@@ -102,15 +107,25 @@ class FlutterVpn {
     }
   }
 
-  /// Get current state from `CharonVpnService`.
-  /// Only available for Android devices.
-  static Future<CharonVpnState> get currentCharonState async {
-    if (!Platform.isAndroid) throw Exception('Unsupport Platform');
-    // TODO: Implement CharonState API.
-  }
-
-  /// Disconnect will stop current VPN service.
-  static Future<Null> disconnect() async {
-    await _channel.invokeMethod('disconnect');
+  /// Map Charon state code to `CharonVpnState`.
+  static CharonVpnState _mapCharonState(int charonState) {
+    switch (charonState) {
+      case 1:
+        return CharonVpnState.up;
+      case 2:
+        return CharonVpnState.down;
+      case 3:
+        return CharonVpnState.authError;
+      case 4:
+        return CharonVpnState.peerAuthError;
+      case 5:
+        return CharonVpnState.lookUpError;
+      case 6:
+        return CharonVpnState.unreachableError;
+      case 7:
+        return CharonVpnState.certificateUnavailable;
+      default:
+        return CharonVpnState.genericError;
+    }
   }
 }

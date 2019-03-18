@@ -232,7 +232,7 @@ public class CharonVpnService extends VpnService implements Runnable {
         manager.notify(1, buildNotification());
 
         // Update state for handler.
-        VPNStateHandler.Companion.updateState(status);
+        VPNStateHandler.Companion.updateCharonState(status);
     }
 
     /**
