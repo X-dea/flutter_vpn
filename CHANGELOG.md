@@ -1,5 +1,5 @@
 ## 0.2.0
-Add `getVpnState` and `getCharonState`.  
+Add `getVpnState` and `getCharonState` for Android.
 **Breaking Change**  
 Old `FlutterVpnState` has been renamed to `CharonVpnState`. This method is for Android only.  
 New `FlutterVpnState` is designed for both Android and iOS platform.
