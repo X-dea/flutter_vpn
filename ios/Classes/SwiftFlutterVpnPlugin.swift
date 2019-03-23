@@ -5,6 +5,7 @@ import UIKit
 public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_vpn", binaryMessenger: registrar.messenger())
+    let stateChannel = FlutterEventChannel(name: "flutter_vpn_state", binaryMessenger: controller)
     let instance = SwiftFlutterVpnPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
     channel.setMethodCallHandler({
@@ -15,6 +16,8 @@ public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
                 connectVPN(result: result, usrname: args["username"]!, pwd: args["password"]!, add: args["address"]!)
             } else if ("disconnect" == call.method) {
                 stopVPN(result: result)
+            } else if ("getCurrentState" == call.method) {
+                getVPNState(result: result)
             }
     })
   }

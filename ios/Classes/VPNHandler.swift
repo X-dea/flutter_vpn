@@ -77,7 +77,6 @@ func connectVPN(result: FlutterResult, usrname: NSString, pwd: NSString, add: NS
         else {
             
             let p = NEVPNProtocolIKEv2()
-
             
             p.username = usrname as String
             p.remoteIdentifier = add as String
@@ -98,7 +97,6 @@ func connectVPN(result: FlutterResult, usrname: NSString, pwd: NSString, add: NS
                     print("VPN Preferences error: 2")
                 }
                 else {
-                    
                     
                     vpnManager.loadFromPreferences(completionHandler: { (error) in
                         
@@ -142,24 +140,24 @@ func stopVPN(result: FlutterResult){
     result(0)
 }
 
-func VPNstatus(result: FlutterResult) {
+func getVPNState(result: FlutterResult) {
     let vpnManager = NEVPNManager.shared()
     let status = vpnManager.connection.status
     switch status {
     case .connecting:
-        result(0)
-        break
-    case .connected:
         result(1)
         break
-    case .disconnecting:
+    case .connected:
         result(2)
         break
-    case .disconnected:
+    case .disconnecting:
         result(3)
         break
+    case .disconnected:
+        result(0)
+        break
     case .invalid:
-        result(-1)
+        result(4)
         break
     case .reasserting:
         result(4)
