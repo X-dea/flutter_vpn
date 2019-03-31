@@ -1,3 +1,6 @@
+## 0.3.0
+Add `getVpnState` for iOS.
+
 ## 0.2.0
 Add `getVpnState` and `getCharonState` for Android.
 **Breaking Change**  
