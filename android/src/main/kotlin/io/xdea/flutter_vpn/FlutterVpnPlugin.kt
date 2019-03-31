@@ -82,8 +82,11 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
       "getCurrentState" -> result.success(VPNStateHandler.currentState)
       "getCharonState" -> result.success(VPNStateHandler.currentCharonState)
       "disconnect" -> {
-        VPNStateHandler.updateState(3)
+        if (VPNStateHandler.currentState == 2)
+          VPNStateHandler.updateState(3)
         disconnect()
+        if (VPNStateHandler.currentState == 1)
+          VPNStateHandler.updateState(0)
         result.success(null)
       }
       else -> result.notImplemented()

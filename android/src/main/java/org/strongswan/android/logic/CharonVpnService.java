@@ -164,7 +164,6 @@ public class CharonVpnService extends VpnService implements Runnable {
                     while (!mProfileUpdated)
                         wait();
 
-
                     mProfileUpdated = false;
                     stopCurrentConnection();
                     if (mNextProfile == null)
