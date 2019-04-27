@@ -6,8 +6,6 @@ This plugin help developers to access VPN service in their flutter app.
 The Android part was implemented by [strongswan](https://www.strongswan.org/) which support ikev2 protocol.  
 The iOS part was implemented by NEVPNManager.
 
-### Warning
-This plugin is still under development.
 Issues and PRs are welcome!
 
 ## Installation

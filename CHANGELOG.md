@@ -1,3 +1,7 @@
+## 0.4.0
+Fix state error if disconnect while connecting.
+Add iOS state handler.
+
 ## 0.3.0
 Add `getVpnState` for iOS.
 
