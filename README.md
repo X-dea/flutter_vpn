@@ -1,5 +1,13 @@
 # Flutter VPN plugin
 
+<a href="https://pub.dartlang.org/packages/flutter_vpn">
+    <img src="https://img.shields.io/pub/v/flutter_vpn.svg"
+    alt="Pub Package" />
+</a>
+<a href="https://github.com/Solido/awesome-flutter">
+   <img alt="Awesome Flutter" src="https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=flat-square" />
+</a>
+
 This plugin help developers to access VPN service in their flutter app.  
 本插件帮助开发者在自己的应用内调用 VPN 服务。
 
