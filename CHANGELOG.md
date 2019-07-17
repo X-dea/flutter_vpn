@@ -1,3 +1,6 @@
+## 0.5.0
+Fix (#15) event handler for android (Flutter 1.6+).
+
 ## 0.4.0
 Fix state error if disconnect while connecting.
 Add iOS state handler.

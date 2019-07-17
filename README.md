@@ -20,7 +20,7 @@ Issues and PRs are welcome!
 
 ### For Android
 
-Modify your `app/build.gradle` to use abiFilter because flutter doesn't support multi-architecture in single apk [#18494](https://github.com/flutter/flutter/issues/18494).
+Modify your `app/build.gradle` to use abiFilter because flutter doesn't apply abiFilter for target platform yet.
 ```gradle
 android {
     ...
@@ -29,11 +29,13 @@ android {
         release {
             ...
             ndk {
-                    if (project.hasProperty('target-platform') &&
-                            project.property('target-platform') == 'android-arm64') {
-                        abiFilters 'arm64-v8a'
-                    } else {
-                        abiFilters 'armeabi-v7a'
+                    if (project.hasProperty('target-platform')) {
+                        if (project.property('target-platform') == 'android-arm,android-arm64')
+                            abiFilters 'armeabi-v7a', 'arm64-v8a'
+                        else if (project.property('target-platform') == 'android-arm')
+                            abiFilters 'armeabi-v7a'
+                        else if (project.property('target-platform') == 'android-arm64')
+                            abiFilters 'arm64-v8a'
                     }
                 }
             }
