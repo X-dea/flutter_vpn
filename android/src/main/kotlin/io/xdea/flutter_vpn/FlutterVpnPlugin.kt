@@ -29,90 +29,90 @@ import org.strongswan.android.logic.CharonVpnService
 import java.util.*
 
 class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
-  init {
-    // Load charon bridge
-    System.loadLibrary("androidbridge")
-  }
-
-  companion object {
-    @JvmStatic
-    fun registerWith(registrar: Registrar) {
-      // Register method channel.
-      val channel = MethodChannel(registrar.messenger(), "flutter_vpn")
-      channel.setMethodCallHandler(FlutterVpnPlugin(registrar))
-
-      // Register event channel to handle state change.
-      val eventChannel = EventChannel(registrar.messenger(), "flutter_vpn_states")
-      eventChannel.setStreamHandler(VPNStateHandler())
+    init {
+        // Load charon bridge
+        System.loadLibrary("androidbridge")
     }
 
-    fun onPrepareResult(requestCode: Int, resultCode: Int, result: Result): Boolean {
-      if (requestCode == 0 && resultCode == RESULT_OK)
-        result.success(null)
-      else
-        result.error("PrepareError", "Failed to prepare", false)
-      return true
-    }
-  }
+    companion object {
+        @JvmStatic
+        fun registerWith(registrar: Registrar) {
+            // Register method channel.
+            val channel = MethodChannel(registrar.messenger(), "flutter_vpn")
+            channel.setMethodCallHandler(FlutterVpnPlugin(registrar))
 
-
-  override fun onMethodCall(call: MethodCall, result: Result) {
-    when (call.method) {
-      "prepare" -> {
-        val intent = VpnService.prepare(registrar.activeContext())
-        if (intent != null) {
-          registrar.addActivityResultListener { req, res, _ -> onPrepareResult(req, res, result) }
-          registrar.activity().startActivityForResult(intent, 0)
+            // Register event channel to handle state change.
+            val eventChannel = EventChannel(registrar.messenger(), "flutter_vpn_states")
+            eventChannel.setStreamHandler(VPNStateHandler())
         }
-      }
-      "connect" -> {
-        val intent = VpnService.prepare(registrar.activeContext())
-        if (intent != null) {
-          result.error("PrepareError", "Not prepared", false)
-          return
+
+        fun onPrepareResult(requestCode: Int, resultCode: Int, result: Result): Boolean {
+            if (requestCode == 0 && resultCode == RESULT_OK)
+                result.success(null)
+            else
+                result.error("PrepareError", "Failed to prepare", false)
+            return true
         }
-        VPNStateHandler.updateState(1)
-        val map = call.arguments as HashMap<String, String>
-        val address = map["address"]
-        val username = map["username"]
-        val password = map["password"]
-        connect(address, username, password)
-        result.success(null)
-      }
-      "getCurrentState" -> result.success(VPNStateHandler.currentState)
-      "getCharonState" -> result.success(VPNStateHandler.currentCharonState)
-      "disconnect" -> {
-        if (VPNStateHandler.currentState == 2)
-          VPNStateHandler.updateState(3)
-        disconnect()
-        if (VPNStateHandler.currentState == 1)
-          VPNStateHandler.updateState(0)
-        result.success(null)
-      }
-      else -> result.notImplemented()
     }
-  }
 
-  private fun connect(address: String?, username: String?, password: String?) {
-    val profileInfo = Bundle()
-    profileInfo.putString("address", address)
-    profileInfo.putString("username", username)
-    profileInfo.putString("password", password)
 
-    val intent = Intent(registrar.activeContext(), CharonVpnService::class.java)
-            .putExtras(profileInfo)
-    ContextCompat.startForegroundService(registrar.activeContext(), intent)
-  }
+    override fun onMethodCall(call: MethodCall, result: Result) {
+        when (call.method) {
+            "prepare" -> {
+                val intent = VpnService.prepare(registrar.activeContext())
+                if (intent != null) {
+                    registrar.addActivityResultListener { req, res, _ -> onPrepareResult(req, res, result) }
+                    registrar.activity().startActivityForResult(intent, 0)
+                }
+            }
+            "connect" -> {
+                val intent = VpnService.prepare(registrar.activeContext())
+                if (intent != null) {
+                    result.error("PrepareError", "Not prepared", false)
+                    return
+                }
+                VPNStateHandler.updateState(1)
+                val map = call.arguments as HashMap<String, String>
+                val address = map["address"]
+                val username = map["username"]
+                val password = map["password"]
+                connect(address, username, password)
+                result.success(null)
+            }
+            "getCurrentState" -> result.success(VPNStateHandler.currentState)
+            "getCharonState" -> result.success(VPNStateHandler.currentCharonState)
+            "disconnect" -> {
+                if (VPNStateHandler.currentState == 2)
+                    VPNStateHandler.updateState(3)
+                disconnect()
+                if (VPNStateHandler.currentState == 1)
+                    VPNStateHandler.updateState(0)
+                result.success(null)
+            }
+            else -> result.notImplemented()
+        }
+    }
 
-  private fun disconnect() {
-    /* as soon as the TUN device is created by calling establish() on the
-     * VpnService.Builder object the system binds to the service and keeps
-     * bound until the file descriptor of the TUN device is closed.  thus
-     * calling stopService() here would not stop (destroy) the service yet,
-     * instead we call startService() with a specific action which shuts down
-     * the daemon (and closes the TUN device, if any) */
-    val intent = Intent(registrar.activeContext(), CharonVpnService::class.java)
-    intent.action = CharonVpnService.DISCONNECT_ACTION
-    registrar.activeContext().startService(intent)
-  }
+    private fun connect(address: String?, username: String?, password: String?) {
+        val profileInfo = Bundle()
+        profileInfo.putString("address", address)
+        profileInfo.putString("username", username)
+        profileInfo.putString("password", password)
+
+        val intent = Intent(registrar.activeContext(), CharonVpnService::class.java)
+                .putExtras(profileInfo)
+        ContextCompat.startForegroundService(registrar.activeContext(), intent)
+    }
+
+    private fun disconnect() {
+        /* as soon as the TUN device is created by calling establish() on the
+         * VpnService.Builder object the system binds to the service and keeps
+         * bound until the file descriptor of the TUN device is closed.  thus
+         * calling stopService() here would not stop (destroy) the service yet,
+         * instead we call startService() with a specific action which shuts down
+         * the daemon (and closes the TUN device, if any) */
+        val intent = Intent(registrar.activeContext(), CharonVpnService::class.java)
+        intent.action = CharonVpnService.DISCONNECT_ACTION
+        registrar.activeContext().startService(intent)
+    }
 }

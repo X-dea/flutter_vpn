@@ -14,6 +14,8 @@
 
 package io.xdea.flutter_vpn
 
+import android.os.Handler
+import android.os.Looper
 import io.flutter.plugin.common.EventChannel
 
 /*
@@ -38,38 +40,39 @@ import io.flutter.plugin.common.EventChannel
 
 class VPNStateHandler : EventChannel.StreamHandler {
 
-  companion object {
-    /**
-     * The charon VPN service will update state through the sink if not `null`.
-     */
-    var eventHandler: EventChannel.EventSink? = null
-    var currentCharonState = 2
-    var currentState = 0
+    companion object {
+        // Handle event in main thread.
+        private val handler = Handler(Looper.getMainLooper())
 
-    fun updateCharonState(newCharonState: Int) {
-      currentCharonState = newCharonState
+        // The charon VPN service will update state through the sink if not `null`.
+        var eventHandler: EventChannel.EventSink? = null
+        var currentCharonState = 2
+        var currentState = 0
 
-      // Map Charon state to Normal state.
-      when (newCharonState) {
-        1 -> currentState = 2
-        2 -> currentState = 0
-        else -> currentState = 4
-      }
+        fun updateCharonState(newCharonState: Int) {
+            currentCharonState = newCharonState
 
-      eventHandler?.success(currentState)
+            // Map Charon state to Normal state.
+            currentState = when (newCharonState) {
+                1 -> 2
+                2 -> 0
+                else -> 4
+            }
+
+            handler.post { eventHandler?.success(currentState) }
+        }
+
+        fun updateState(newState: Int) {
+            currentState = newState
+            handler.post { eventHandler?.success(currentState) }
+        }
     }
 
-    fun updateState(newState: Int) {
-      currentState = newState
-      eventHandler?.success(currentState)
+    override fun onListen(p0: Any?, sink: EventChannel.EventSink) {
+        eventHandler = sink
     }
-  }
 
-  override fun onListen(p0: Any?, sink: EventChannel.EventSink) {
-    eventHandler = sink
-  }
-
-  override fun onCancel(p0: Any?) {
-    eventHandler = null
-  }
+    override fun onCancel(p0: Any?) {
+        eventHandler = null
+    }
 }
