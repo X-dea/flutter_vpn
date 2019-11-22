@@ -15,7 +15,11 @@
 
 package org.strongswan.android.utils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Class that represents a set of IP address ranges (not necessarily proper subnets) and allows

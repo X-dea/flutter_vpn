@@ -155,6 +155,6 @@ public class SettingsWriter
 		/**
 		 * Assigned sub-sections
 		 */
-		LinkedHashMap<String,SettingsSection> Sections = new LinkedHashMap<String, SettingsSection>();
+		LinkedHashMap<String,SettingsSection> Sections = new LinkedHashMap<String, SettingsWriter.SettingsSection>();
 	}
 }
