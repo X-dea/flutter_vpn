@@ -27,7 +27,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.VpnService;
 import android.os.Build;
@@ -35,7 +34,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
-import android.preference.PreferenceManager;
 import android.security.KeyChain;
 import android.security.KeyChainException;
 import android.system.OsConstants;
@@ -45,7 +43,7 @@ import androidx.core.app.NotificationCompat;
 
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfile.SelectedAppsHandling;
-import org.strongswan.android.data.VpnProfileDataSource;
+import org.strongswan.android.data.VpnType;
 import org.strongswan.android.data.VpnType.VpnTypeFeature;
 import org.strongswan.android.logic.VpnStateService.ErrorState;
 import org.strongswan.android.logic.VpnStateService.State;
@@ -73,6 +71,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
+import java.util.UUID;
+
+import io.xdea.flutter_vpn.VPNStateHandler;
 
 public class CharonVpnService extends VpnService implements Runnable, VpnStateService.VpnStateListener {
     private static final String TAG = CharonVpnService.class.getSimpleName();
@@ -136,27 +137,21 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
             VpnProfile profile = null;
             boolean retry = false;
 
-            if (VPN_SERVICE_ACTION.equals(intent.getAction())) {    /* triggered when Always-on VPN is activated */
-                SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-                String uuid = pref.getString(Constants.PREF_DEFAULT_VPN_PROFILE, null);
-                if (uuid == null || uuid.equals(Constants.PREF_DEFAULT_VPN_PROFILE_MRU)) {
-                    uuid = pref.getString(Constants.PREF_MRU_VPN_PROFILE, null);
-                }
-                profile = mDataSource.getVpnProfile(uuid);
-            } else if (!DISCONNECT_ACTION.equals(intent.getAction())) {
+           if (VPN_SERVICE_ACTION.equals(intent.getAction())||!DISCONNECT_ACTION.equals(intent.getAction())) {
                 Bundle bundle = intent.getExtras();
                 if (bundle != null) {
-                    profile = mDataSource.getVpnProfile(bundle.getString(VpnProfileDataSource.KEY_UUID));
-                    if (profile != null) {
-                        String password = bundle.getString(VpnProfileDataSource.KEY_PASSWORD);
-                        profile.setPassword(password);
+                    profile = new VpnProfile();
+                    profile.setId(1);
+                    profile.setUUID(UUID.randomUUID());
+                    profile.setName(bundle.getString("Address"));
+                    profile.setGateway(bundle.getString("Address"));
+                    profile.setUsername(bundle.getString("UserName"));
+                    profile.setPassword(bundle.getString("Password"));
+                    profile.setVpnType(VpnType.fromIdentifier(bundle.getString("VpnType")));
+                    profile.setSelectedAppsHandling(0);
+                    profile.setFlags(0);
 
-                        retry = bundle.getBoolean(CharonVpnService.KEY_IS_RETRY, false);
-
-                        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-                        pref.edit().putString(Constants.PREF_MRU_VPN_PROFILE, profile.getUUID().toString())
-                                .apply();
-                    }
+                    retry = bundle.getBoolean(CharonVpnService.KEY_IS_RETRY, false);
                 }
             }
             if (profile != null && !retry) {    /* delete the log file if this is not an automatic retry */
@@ -175,8 +170,6 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
         /* handler used to do changes in the main UI thread */
         mHandler = new Handler();
 
-        mDataSource = new VpnProfileDataSource(this);
-        mDataSource.open();
         /* use a separate thread as main thread for charon */
         mConnectionHandler = new Thread(this);
         /* the thread is started when the service is bound */
@@ -538,6 +531,7 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
      * @param status new state
      */
     public void updateStatus(int status) {
+        VPNStateHandler.Companion.updateCharonState(status);
         switch (status) {
             case STATE_CHILD_SA_DOWN:
                 if (!mIsDisconnecting) {

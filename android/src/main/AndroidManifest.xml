@@ -1,9 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="io.xdea.flutter_vpn">
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    package="io.xdea.flutter_vpn">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application>
-        <service android:name="org.strongswan.android.logic.CharonVpnService"
-            android:permission="android.permission.BIND_VPN_SERVICE"/>
+        <service
+            android:name="org.strongswan.android.logic.VpnStateService"
+            android:exported="false" />
+        <service
+            android:name="org.strongswan.android.logic.CharonVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE" />
     </application>
 </manifest>

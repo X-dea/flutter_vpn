@@ -27,9 +27,7 @@ import android.os.SystemClock;
 
 import androidx.core.content.ContextCompat;
 
-import org.strongswan.android.R;
 import org.strongswan.android.data.VpnProfile;
-import org.strongswan.android.data.VpnProfileDataSource;
 import org.strongswan.android.logic.imc.ImcState;
 import org.strongswan.android.logic.imc.RemediationInstruction;
 
@@ -46,6 +44,7 @@ public class VpnStateService extends Service {
     private long mConnectionID = 0;
     private Handler mHandler;
     private VpnProfile mProfile;
+    private Bundle mProfileInfo;
     private State mState = State.DISABLED;
     private ErrorState mError = ErrorState.NO_ERROR;
     private ImcState mImcState = ImcState.UNKNOWN;
@@ -189,6 +188,7 @@ public class VpnStateService extends Service {
     /**
      * Get a description of the current error, if any.
      * TODO: i18n
+     *
      * @return error description text
      */
     public String getErrorText() {
@@ -266,10 +266,9 @@ public class VpnStateService extends Service {
         Context context = getApplicationContext();
         Intent intent = new Intent(context, CharonVpnService.class);
         if (profileInfo == null) {
-            profileInfo = new Bundle();
-            profileInfo.putString(VpnProfileDataSource.KEY_UUID, mProfile.getUUID().toString());
-            /* pass the previous password along */
-            profileInfo.putString(VpnProfileDataSource.KEY_PASSWORD, mProfile.getPassword());
+            profileInfo = mProfileInfo;
+        } else {
+            mProfileInfo = profileInfo;
         }
         if (fromScratch) {
             /* reset if this is a manual retry or a new connection */
