@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
   final _passwordController = TextEditingController();
 
   var state = FlutterVpnState.disconnected;
-  var charonState = CharonVpnErrorState.NO_ERROR;
+  var charonState = CharonErrorState.NO_ERROR;
 
   @override
   void initState() {

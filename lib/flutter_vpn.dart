@@ -28,9 +28,9 @@ enum FlutterVpnState {
   genericError
 }
 
-/// The VPN state for `CharonVpnService`.
+/// The error state from `VpnStateService`.
 /// Only available for Android device.
-enum CharonVpnErrorState {
+enum CharonErrorState {
   NO_ERROR,
   AUTH_FAILED,
   PEER_AUTH_FAILED,
@@ -42,7 +42,7 @@ enum CharonVpnErrorState {
 }
 
 class FlutterVpn {
-  /// Receive state change from charon VPN service.
+  /// Receive state change from VPN service.
   ///
   /// Can only be listened once.
   /// If have more than one subscription, only the last subscription can receive
@@ -52,17 +52,16 @@ class FlutterVpn {
       .map((e) => FlutterVpnState.values[e]);
 
   /// Get current state.
-  static Future<FlutterVpnState> get currentState async {
-    var state = await _channel.invokeMethod<int>('getCurrentState');
-    return FlutterVpnState.values[state];
-  }
+  static Future<FlutterVpnState> get currentState async => FlutterVpnState
+      .values[await _channel.invokeMethod<int>('getCurrentState')];
 
-  /// Get current error state from `CharonVpnStateService`.
-  /// Only available for Android devices.
-  static Future<CharonVpnErrorState> get charonErrorState async {
+  /// Get current error state from `VpnStateService`. (Android only)
+  /// When [FlutterVpnState.genericError] is received, details of error can be
+  /// inspected by [CharonErrorState].
+  static Future<CharonErrorState> get charonErrorState async {
     if (!Platform.isAndroid) throw Exception('Unsupport Platform');
     var state = await _channel.invokeMethod<int>('getCharonErrorState');
-    return CharonVpnErrorState.values[state];
+    return CharonErrorState.values[state];
   }
 
   /// Prepare for vpn connection. (Android only)
@@ -77,6 +76,11 @@ class FlutterVpn {
     return await _channel.invokeMethod('prepare');
   }
 
+  /// Disconnect and stop VPN service.
+  static Future<Null> disconnect() async {
+    await _channel.invokeMethod('disconnect');
+  }
+
   /// Connect to VPN.
   ///
   /// Use given credentials to connect VPN (ikev2-eap).
@@ -85,10 +89,5 @@ class FlutterVpn {
       String address, String username, String password) async {
     await _channel.invokeMethod('connect',
         {'address': address, 'username': username, 'password': password});
-  }
-
-  /// Disconnect will stop current VPN service.
-  static Future<Null> disconnect() async {
-    await _channel.invokeMethod('disconnect');
   }
 }
