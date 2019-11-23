@@ -28,19 +28,20 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import org.strongswan.android.logic.CharonVpnService
 import org.strongswan.android.logic.VpnStateService
-import java.util.*
 
 class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
-    private var mService: VpnStateService? = null
-    private val mServiceConnection = object : ServiceConnection {
+    private var _vpnStateService: VpnStateService? = null
+    private val _serviceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName) {
-            mService = null
+            _vpnStateService = null
+            VpnStateHandler.vpnStateService = null
         }
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            mService = (service as VpnStateService.LocalBinder).service
+            _vpnStateService = (service as VpnStateService.LocalBinder).service
+            VpnStateHandler.vpnStateService = _vpnStateService
+            _vpnStateService?.registerListener(VpnStateHandler)
         }
     }
 
@@ -48,13 +49,14 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
         // Load charon bridge
         System.loadLibrary("androidbridge")
 
+        // Start and bind VpnStateService to current context.
         registrar.activeContext().bindService(
                 Intent(registrar.activeContext(), VpnStateService::class.java),
-                mServiceConnection,
+                _serviceConnection,
                 Service.BIND_AUTO_CREATE
         )
         registrar.addViewDestroyListener {
-            registrar.context().unbindService(mServiceConnection)
+            registrar.context().unbindService(_serviceConnection)
             true
         }
     }
@@ -68,10 +70,9 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
 
             // Register event channel to handle state change.
             val eventChannel = EventChannel(registrar.messenger(), "flutter_vpn_states")
-            eventChannel.setStreamHandler(VPNStateHandler())
+            eventChannel.setStreamHandler(VpnStateHandler)
         }
     }
-
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
@@ -94,40 +95,27 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
                     result.error("PrepareError", "Not prepared", false)
                     return
                 }
-                VPNStateHandler.updateState(1)
 
                 val map = call.arguments as HashMap<String, String>
-                val address = map["address"]
-                val username = map["username"]
-                val password = map["password"]
-                connect(address, username, password)
+
+                val profileInfo = Bundle()
+                profileInfo.putString("Address", map["address"])
+                profileInfo.putString("UserName", map["username"])
+                profileInfo.putString("Password", map["password"])
+                profileInfo.putString("VpnType", "ikev2-eap")
+
+                _vpnStateService?.connect(profileInfo, true)
                 result.success(null)
             }
-            "getCurrentState" -> result.success(VPNStateHandler.currentState)
-            "getCharonState" -> result.success(VPNStateHandler.currentCharonState)
-            "disconnect" -> {
-                if (VPNStateHandler.currentState == 2)
-                    VPNStateHandler.updateState(3)
-                disconnect()
-                if (VPNStateHandler.currentState == 1)
-                    VPNStateHandler.updateState(0)
-                result.success(null)
+            "getCurrentState" -> {
+                if (_vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR)
+                    result.success(4)
+                else
+                    result.success(_vpnStateService?.state?.ordinal)
             }
+            "getCharonErrorState" -> result.success(_vpnStateService?.errorState?.ordinal)
+            "disconnect" -> _vpnStateService?.disconnect()
             else -> result.notImplemented()
         }
-    }
-
-    private fun connect(address: String?, username: String?, password: String?) {
-        val profileInfo = Bundle()
-        profileInfo.putString("Address", address)
-        profileInfo.putString("UserName", username)
-        profileInfo.putString("Password", password)
-        profileInfo.putString("VpnType", "ikev2-eap")
-
-        mService?.connect(profileInfo, true)
-    }
-
-    private fun disconnect() {
-        mService?.disconnect()
     }
 }

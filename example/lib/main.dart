@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
   final _passwordController = TextEditingController();
 
   var state = FlutterVpnState.disconnected;
-  var charonState = CharonVpnState.down;
+  var charonState = CharonVpnErrorState.NO_ERROR;
 
   @override
   void initState() {
@@ -65,10 +65,10 @@ class _MyAppState extends State<MyApp> {
             RaisedButton(
               child: Text('Connect'),
               onPressed: () => FlutterVpn.simpleConnect(
-                    _addressController.text,
-                    _usernameController.text,
-                    _passwordController.text,
-                  ),
+                _addressController.text,
+                _usernameController.text,
+                _passwordController.text,
+              ),
             ),
             RaisedButton(
               child: Text('Disconnect'),
@@ -83,7 +83,7 @@ class _MyAppState extends State<MyApp> {
             RaisedButton(
                 child: Text('Update Charon State'),
                 onPressed: () async {
-                  var newState = await FlutterVpn.currentCharonState;
+                  var newState = await FlutterVpn.charonErrorState;
                   setState(() => charonState = newState);
                 }),
           ],

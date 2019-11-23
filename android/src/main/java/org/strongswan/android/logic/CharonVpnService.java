@@ -73,7 +73,7 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.UUID;
 
-import io.xdea.flutter_vpn.VPNStateHandler;
+import io.xdea.flutter_vpn.VpnStateHandler;
 
 public class CharonVpnService extends VpnService implements Runnable, VpnStateService.VpnStateListener {
     private static final String TAG = CharonVpnService.class.getSimpleName();
@@ -531,7 +531,6 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
      * @param status new state
      */
     public void updateStatus(int status) {
-        VPNStateHandler.Companion.updateCharonState(status);
         switch (status) {
             case STATE_CHILD_SA_DOWN:
                 if (!mIsDisconnecting) {
