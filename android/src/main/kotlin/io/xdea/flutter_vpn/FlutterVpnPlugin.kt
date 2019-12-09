@@ -31,6 +31,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import org.strongswan.android.logic.VpnStateService
 
 class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
+    private var _shouldUnbind: Boolean = false
     private var _vpnStateService: VpnStateService? = null
     private val _serviceConnection = object : ServiceConnection {
         override fun onServiceDisconnected(name: ComponentName) {
@@ -50,13 +51,18 @@ class FlutterVpnPlugin(private val registrar: Registrar) : MethodCallHandler {
         System.loadLibrary("androidbridge")
 
         // Start and bind VpnStateService to current context.
-        registrar.activeContext().bindService(
-                Intent(registrar.activeContext(), VpnStateService::class.java),
-                _serviceConnection,
-                Service.BIND_AUTO_CREATE
-        )
+        if (registrar.activeContext().bindService(
+                        Intent(registrar.activeContext(), VpnStateService::class.java),
+                        _serviceConnection,
+                        Service.BIND_AUTO_CREATE
+                )) {
+            _shouldUnbind = true
+        }
         registrar.addViewDestroyListener {
-            registrar.context().unbindService(_serviceConnection)
+            if (_shouldUnbind) {
+                registrar.activeContext().unbindService(_serviceConnection)
+                _shouldUnbind = false
+            }
             true
         }
     }
