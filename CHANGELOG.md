@@ -1,3 +1,7 @@
+## 0.7.0
+- Add MTU for Android.
+- Fix service unbinding. (#27)
+
 ## 0.6.0
 - Update to StrongSwan 5.8.1.
 - Use original notification from StrongSwan frontend.
