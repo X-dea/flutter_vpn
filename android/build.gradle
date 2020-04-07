@@ -58,7 +58,6 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     lintOptions {
@@ -73,5 +72,6 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // TODO: Remove when custom icon available.
     implementation 'androidx.appcompat:appcompat:1.1.0'
 }
