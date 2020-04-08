@@ -20,7 +20,7 @@ Issues and PRs are welcome!
 
 ### For Android
 
-Modify your `app/build.gradle` to use abiFilter because flutter doesn't apply abiFilter for target platform yet.
+Modify your `app/build.gradle` to use abiFilter since flutter doesn't apply abiFilter for target platform yet.
 ```gradle
 android {
     ...
@@ -29,14 +29,19 @@ android {
         release {
             ...
             ndk {
-                    if (project.hasProperty('target-platform')) {
-                        if (project.property('target-platform') == 'android-arm,android-arm64')
-                            abiFilters 'armeabi-v7a', 'arm64-v8a'
-                        else if (project.property('target-platform') == 'android-arm')
-                            abiFilters 'armeabi-v7a'
-                        else if (project.property('target-platform') == 'android-arm64')
-                            abiFilters 'arm64-v8a'
-                    }
+                if (!project.hasProperty('target-platform')) {
+                    abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+                } else {
+                    def platforms = project.property('target-platform').split(',')
+                    def platformMap = [
+                            'android-arm'  : 'armeabi-v7a',
+                            'android-arm64': 'arm64-v8a',
+                            'android-x86'  : 'x86',
+                            'android-x64'  : 'x86_64',
+                    ]
+                    abiFilters = platforms.stream().map({ e ->
+                        platformMap.containsKey(e) ? platformMap[e] : e
+                    }).toArray()
                 }
             }
     }
