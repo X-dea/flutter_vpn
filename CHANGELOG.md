@@ -1,3 +1,10 @@
+## 0.8.0
+- Fix crash on launch caused by abiFilters. (#45)
+
+**Breaking Changes**
+- Support Android embedding v2 (v1 is nolonger supported).
+- Please update abiFilters according to the description in README.
+
 ## 0.7.0
 - Add MTU for Android.
 - Fix service unbinding. (#27)
