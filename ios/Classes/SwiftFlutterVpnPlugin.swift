@@ -20,9 +20,11 @@ public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_vpn", binaryMessenger: registrar.messenger())
     let stateChannel = FlutterEventChannel(name: "flutter_vpn_state", binaryMessenger: registrar.messenger())
+    
     let instance = SwiftFlutterVpnPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
     stateChannel.setStreamHandler(VPNStateHandler() as! FlutterStreamHandler & NSObjectProtocol)
+    
     channel.setMethodCallHandler {
       (call: FlutterMethodCall, result: FlutterResult) -> Void in
       if call.method == "connect" {
@@ -34,9 +36,5 @@ public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
         getVPNState(result: result)
       }
     }
-  }
-
-  public func handle(_: FlutterMethodCall, result: @escaping FlutterResult) {
-    result("iOS " + UIDevice.current.systemVersion)
   }
 }
