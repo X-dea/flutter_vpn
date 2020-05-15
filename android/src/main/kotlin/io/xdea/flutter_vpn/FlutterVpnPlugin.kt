@@ -100,7 +100,7 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when (call.method) {
       "hasPrepared" -> {
-        val intent = VpnService.prepare(registrar.activeContext())
+        val intent = VpnService.prepare(activityBinding.activity.applicationContext)
         result.success(intent == null)
       }
       "prepare" -> {
