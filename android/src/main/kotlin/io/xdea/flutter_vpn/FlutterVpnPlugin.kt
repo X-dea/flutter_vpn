@@ -99,23 +99,31 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when (call.method) {
+      "hasPrepared" -> {
+        val intent = VpnService.prepare(registrar.activeContext())
+        result.success(intent == null)
+      }
       "prepare" -> {
         val intent = VpnService.prepare(activityBinding.activity.applicationContext)
         if (intent != null) {
           activityBinding.addActivityResultListener { req, res, _ ->
             if (req == 0 && res == RESULT_OK)
-              result.success(null)
+              result.success(true)
             else
-              result.error("PrepareError", "Failed to prepare", false)
+              result.success(false)
             true
           }
           activityBinding.activity.startActivityForResult(intent, 0)
+        } else {
+          // If intent is null, already prepared
+          result.success(true)
         }
       }
       "connect" -> {
         val intent = VpnService.prepare(activityBinding.activity.applicationContext)
         if (intent != null) {
-          result.error("PrepareError", "Not prepared", false)
+          // Not prepared yet
+          result.success(false)
           return
         }
 
@@ -129,7 +137,7 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         profileInfo.putInt("MTU", map["mtu"]?.toInt() ?: 1400)
 
         vpnStateService?.connect(profileInfo, true)
-        result.success(null)
+        result.success(true)
       }
       "getCurrentState" -> {
         if (vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR)
