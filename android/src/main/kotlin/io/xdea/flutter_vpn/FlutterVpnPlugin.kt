@@ -32,6 +32,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import org.strongswan.android.logic.VpnStateService
+import io.flutter.plugin.common.PluginRegistry
 
 /** FlutterVpnPlugin */
 class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -99,23 +100,35 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when (call.method) {
+      "hasPrepared" -> {
+        val intent = VpnService.prepare(activityBinding.activity.applicationContext)
+        result.success(intent == null)
+      }
       "prepare" -> {
         val intent = VpnService.prepare(activityBinding.activity.applicationContext)
         if (intent != null) {
-          activityBinding.addActivityResultListener { req, res, _ ->
-            if (req == 0 && res == RESULT_OK)
-              result.success(null)
-            else
-              result.error("PrepareError", "Failed to prepare", false)
+          var listener: PluginRegistry.ActivityResultListener? = null
+          listener = PluginRegistry.ActivityResultListener { req, res, _ ->
+            if (req == 0 && res == RESULT_OK) {
+              result.success(true)
+            } else {
+              result.success(false)
+            }
+            listener?.let { activityBinding.removeActivityResultListener(it) };
             true
           }
+          activityBinding.addActivityResultListener(listener)
           activityBinding.activity.startActivityForResult(intent, 0)
+        } else {
+          // If intent is null, already prepared
+          result.success(true)
         }
       }
       "connect" -> {
         val intent = VpnService.prepare(activityBinding.activity.applicationContext)
         if (intent != null) {
-          result.error("PrepareError", "Not prepared", false)
+          // Not prepared yet
+          result.success(false)
           return
         }
 
@@ -129,7 +142,7 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         profileInfo.putInt("MTU", map["mtu"]?.toInt() ?: 1400)
 
         vpnStateService?.connect(profileInfo, true)
-        result.success(null)
+        result.success(true)
       }
       "getCurrentState" -> {
         if (vpnStateService?.errorState != VpnStateService.ErrorState.NO_ERROR)
