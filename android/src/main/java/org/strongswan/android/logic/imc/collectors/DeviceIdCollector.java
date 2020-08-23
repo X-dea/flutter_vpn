@@ -15,11 +15,11 @@
 
 package org.strongswan.android.logic.imc.collectors;
 
-import android.content.ContentResolver;
-import android.content.Context;
-
 import org.strongswan.android.logic.imc.attributes.Attribute;
 import org.strongswan.android.logic.imc.attributes.DeviceIdAttribute;
+
+import android.content.ContentResolver;
+import android.content.Context;
 
 public class DeviceIdCollector implements Collector
 {

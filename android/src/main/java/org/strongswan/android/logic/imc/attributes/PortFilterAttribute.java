@@ -17,12 +17,12 @@
 
 package org.strongswan.android.logic.imc.attributes;
 
-import android.util.Pair;
+import java.util.LinkedList;
 
 import org.strongswan.android.logic.imc.collectors.Protocol;
 import org.strongswan.android.utils.BufferedByteWriter;
 
-import java.util.LinkedList;
+import android.util.Pair;
 
 /**
  * PA-TNC Port Filter attribute (see section 4.2.6 of RFC 5792)

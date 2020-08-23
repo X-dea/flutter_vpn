@@ -242,7 +242,7 @@ public class IPRange implements Comparable<IPRange>
 				return InetAddress.getByAddress(mFrom).getHostAddress() + "/" + mPrefix;
 			}
 			return InetAddress.getByAddress(mFrom).getHostAddress() + "-" +
-					InetAddress.getByAddress(mTo).getHostAddress();
+				   InetAddress.getByAddress(mTo).getHostAddress();
 		}
 		catch (UnknownHostException ignored)
 		{
@@ -324,24 +324,24 @@ public class IPRange implements Comparable<IPRange>
 		ArrayList<IPRange> list = new ArrayList<>();
 		if (!overlaps(range))
 		{	/*           | this | or | this |
-		 * | range |                     | range | */
+		     * | range |                     | range | */
 			list.add(this);
 		}
 		else if (!range.contains(this))
 		{	/* we are not completely removed, so none of these cases applies:
-		 * | this  | or  | this  |   or   | this  |
-		 * | range |     | range   |    |   range | */
+			 * | this  | or  | this  |   or   | this  |
+		     * | range |     | range   |    |   range | */
 			if (compareAddr(mFrom, range.mFrom) < 0 && compareAddr(range.mTo, mTo) < 0)
 			{	/* the removed range is completely within our boundaries:
-			 * |    this    |
-			 *   | range |   */
+				 * |    this    |
+				 *   | range |   */
 				list.add(new IPRange(mFrom, dec(range.mFrom.clone())));
 				list.add(new IPRange(inc(range.mTo.clone()), mTo));
 			}
 			else
 			{	/* one end is within our boundaries the other at or outside it:
-			 * | this     | or    | this     | or | this    |  or  | this    |
-			 * | range |       | range |            | range |           | range | */
+			     * | this     | or    | this     | or | this    |  or  | this    |
+			     * | range |       | range |            | range |           | range | */
 				byte[] from = compareAddr(mFrom, range.mFrom) < 0 ? mFrom : inc(range.mTo.clone());
 				byte[] to = compareAddr(mTo, range.mTo) > 0 ? mTo : dec(range.mFrom.clone());
 				list.add(new IPRange(from, to));
@@ -491,7 +491,7 @@ public class IPRange implements Comparable<IPRange>
 
 			if (from_full && to_full)
 			{	/* full subnet (from=to or from=0.. and to=1.. after common prefix) - not reachable
-			 * due to the shortcut at the top */
+				 * due to the shortcut at the top */
 				list.add(new IPRange(from.clone(), prefix));
 			}
 			else if (from_full)

@@ -73,8 +73,6 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.UUID;
 
-import io.xdea.flutter_vpn.VpnStateHandler;
-
 public class CharonVpnService extends VpnService implements Runnable, VpnStateService.VpnStateListener {
     private static final String TAG = CharonVpnService.class.getSimpleName();
     private static final String VPN_SERVICE_ACTION = "android.net.VpnService";
@@ -137,7 +135,7 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
             VpnProfile profile = null;
             boolean retry = false;
 
-           if (VPN_SERVICE_ACTION.equals(intent.getAction())||!DISCONNECT_ACTION.equals(intent.getAction())) {
+            if (VPN_SERVICE_ACTION.equals(intent.getAction()) || !DISCONNECT_ACTION.equals(intent.getAction())) {
                 Bundle bundle = intent.getExtras();
                 if (bundle != null) {
                     profile = new VpnProfile();

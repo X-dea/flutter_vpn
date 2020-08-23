@@ -17,11 +17,11 @@
 
 package org.strongswan.android.logic.imc.attributes;
 
-import android.util.Pair;
+import java.util.LinkedList;
 
 import org.strongswan.android.utils.BufferedByteWriter;
 
-import java.util.LinkedList;
+import android.util.Pair;
 
 /**
  * PA-TNC Installed Packages attribute (see section 4.2.7 of RFC 5792)
