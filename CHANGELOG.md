@@ -1,3 +1,7 @@
+## 0.9.0
+- Upgrade to StrongSwan 5.9.0.
+- Add `prepared` for checking vpn preparation on android.
+
 ## 0.8.0
 - Fix crash on launch caused by abiFilters. (#45)
 

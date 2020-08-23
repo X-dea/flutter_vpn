@@ -73,13 +73,13 @@ class FlutterVpn {
   /// Do nothing in iOS.
   static Future<bool> prepare() async {
     if (!Platform.isAndroid) return true;
-    return await _channel.invokeMethod('prepare');
+    return await _channel.invokeMethod<bool>('prepare');
   }
 
-  static Future<bool> hasPrepared() async {
+  /// Check if vpn connection has been prepared. (Android only)
+  static Future<bool> get prepared async {
     if (!Platform.isAndroid) return true;
-    final response = await _channel.invokeMethod('hasPrepared');
-    return response;
+    return await _channel.invokeMethod<bool>('prepared');
   }
 
   /// Disconnect and stop VPN service.
