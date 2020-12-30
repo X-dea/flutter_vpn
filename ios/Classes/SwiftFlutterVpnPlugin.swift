@@ -19,7 +19,7 @@ import UIKit
 public class SwiftFlutterVpnPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_vpn", binaryMessenger: registrar.messenger())
-    let stateChannel = FlutterEventChannel(name: "flutter_vpn_state", binaryMessenger: registrar.messenger())
+    let stateChannel = FlutterEventChannel(name: "flutter_vpn_states", binaryMessenger: registrar.messenger())
     
     let instance = SwiftFlutterVpnPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
