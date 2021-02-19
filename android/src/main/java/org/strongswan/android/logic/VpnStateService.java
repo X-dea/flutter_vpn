@@ -25,8 +25,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
 
-import androidx.core.content.ContextCompat;
-
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.logic.imc.ImcState;
 import org.strongswan.android.logic.imc.RemediationInstruction;
@@ -37,6 +35,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import androidx.core.content.ContextCompat;
 
 public class VpnStateService extends Service {
     private final HashSet<VpnStateListener> mListeners = new HashSet<VpnStateListener>();

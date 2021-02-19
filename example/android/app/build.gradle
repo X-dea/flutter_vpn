@@ -26,7 +26,7 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
@@ -39,7 +39,7 @@ android {
     defaultConfig {
         applicationId "io.xdea.flutter_vpn_example"
         minSdkVersion 16
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -49,23 +49,6 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
-
-            ndk {
-                if (!project.hasProperty('target-platform')) {
-                    abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
-                } else {
-                    def platforms = project.property('target-platform').split(',')
-                    def platformMap = [
-                            'android-arm'  : 'armeabi-v7a',
-                            'android-arm64': 'arm64-v8a',
-                            'android-x86'  : 'x86',
-                            'android-x64'  : 'x86_64',
-                    ]
-                    abiFilters = platforms.stream().map({ e ->
-                        platformMap.containsKey(e) ? platformMap[e] : e
-                    }).toArray()
-                }
-            }
         }
     }
 }

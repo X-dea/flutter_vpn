@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
+        classpath 'com.android.tools.build:gradle:4.1.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         // For downloading prebuilt libs
         classpath 'de.undercouch:gradle-download-task:4.0.2'
@@ -20,7 +20,7 @@ apply plugin: 'de.undercouch.download'
 
 // Download prebuilt native libs.
 task downloadNaticeLib(type: Download) {
-    src 'https://github.com/X-dea/Flutter_VPN/releases/download/v0.9.0/strongswan_libs_v5.9.0.zip'
+    src 'https://github.com/X-dea/Flutter_VPN/releases/download/v0.10.0/strongswan_libs_v5.9.1.zip'
     dest "$buildDir/native.zip"
 }
 
@@ -48,7 +48,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     sourceSets.main {
         jni.srcDirs = [] // Disables the default ndk-build call (with on-the-fly Android.mk files)

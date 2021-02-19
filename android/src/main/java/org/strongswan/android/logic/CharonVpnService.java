@@ -39,8 +39,6 @@ import android.security.KeyChainException;
 import android.system.OsConstants;
 import android.util.Log;
 
-import androidx.core.app.NotificationCompat;
-
 import org.strongswan.android.data.VpnProfile;
 import org.strongswan.android.data.VpnProfile.SelectedAppsHandling;
 import org.strongswan.android.data.VpnType;
@@ -72,6 +70,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.UUID;
+
+import androidx.core.app.NotificationCompat;
+
 
 public class CharonVpnService extends VpnService implements Runnable, VpnStateService.VpnStateListener {
     private static final String TAG = CharonVpnService.class.getSimpleName();
@@ -243,7 +244,8 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
                         SimpleFetcher.enable();
                         addNotification();
                         mBuilderAdapter.setProfile(mCurrentProfile);
-                        if (initializeCharon(mBuilderAdapter, mLogFile, mAppDir, mCurrentProfile.getVpnType().has(VpnTypeFeature.BYOD))) {
+                        if (initializeCharon(mBuilderAdapter, mLogFile, mAppDir, mCurrentProfile.getVpnType().has(VpnTypeFeature.BYOD),
+                                (mCurrentProfile.getFlags() & VpnProfile.FLAGS_IPv6_TRANSPORT) != 0)) {
                             Log.i(TAG, "charon started");
 
                             if (mCurrentProfile.getVpnType().has(VpnTypeFeature.USER_PASS) &&
@@ -340,6 +342,7 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
 
     /**
      * Create a notification channel for Android 8+
+     * TODO: i18n
      */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -405,7 +408,7 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
             switch (state) {
                 case CONNECTING:
                     s = "Connecting...";
-//                    builder.setSmallIcon(R.drawable.ic_notification_connecting);\
+//                    builder.setSmallIcon(R.drawable.ic_notification_connecting);
                     builder.setSmallIcon(androidx.appcompat.R.drawable.abc_ic_star_black_48dp);
                     builder.setColor(0xFFFF9909);
                     add_action = true;
@@ -666,9 +669,10 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
      * @param logfile absolute path to the logfile
      * @param appdir  absolute path to the data directory of the app
      * @param byod    enable BYOD features
+     * @param ipv6    enable IPv6 transport
      * @return TRUE if initialization was successful
      */
-    public native boolean initializeCharon(BuilderAdapter builder, String logfile, String appdir, boolean byod);
+    public native boolean initializeCharon(BuilderAdapter builder, String logfile, String appdir, boolean byod, boolean ipv6);
 
     /**
      * Deinitialize charon, provided by libandroidbridge.so
