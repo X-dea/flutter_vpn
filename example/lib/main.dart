@@ -1,5 +1,4 @@
-///
-/// Copyright (C) 2018 Jason C.H
+/// Copyright (C) 2018-2020 Jason C.H
 ///
 /// This library is free software; you can redistribute it and/or
 /// modify it under the terms of the GNU Lesser General Public
@@ -10,8 +9,6 @@
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 /// Lesser General Public License for more details.
-///
-
 import 'package:flutter/material.dart';
 import 'package:flutter_vpn/flutter_vpn.dart';
 
@@ -28,7 +25,7 @@ class _MyAppState extends State<MyApp> {
   final _passwordController = TextEditingController();
 
   var state = FlutterVpnState.disconnected;
-  var charonState = CharonErrorState.NO_ERROR;
+  CharonErrorState? charonState = CharonErrorState.NO_ERROR;
 
   @override
   void initState() {
@@ -62,7 +59,7 @@ class _MyAppState extends State<MyApp> {
               obscureText: true,
               decoration: InputDecoration(icon: Icon(Icons.lock_outline)),
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text('Connect'),
               onPressed: () => FlutterVpn.simpleConnect(
                 _addressController.text,
@@ -70,22 +67,24 @@ class _MyAppState extends State<MyApp> {
                 _passwordController.text,
               ),
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text('Disconnect'),
               onPressed: () => FlutterVpn.disconnect(),
             ),
-            RaisedButton(
-                child: Text('Update State'),
-                onPressed: () async {
-                  var newState = await FlutterVpn.currentState;
-                  setState(() => state = newState);
-                }),
-            RaisedButton(
-                child: Text('Update Charon State'),
-                onPressed: () async {
-                  var newState = await FlutterVpn.charonErrorState;
-                  setState(() => charonState = newState);
-                }),
+            ElevatedButton(
+              child: Text('Update State'),
+              onPressed: () async {
+                var newState = await FlutterVpn.currentState;
+                setState(() => state = newState);
+              },
+            ),
+            ElevatedButton(
+              child: Text('Update Charon State'),
+              onPressed: () async {
+                var newState = await FlutterVpn.charonErrorState;
+                setState(() => charonState = newState);
+              },
+            ),
           ],
         ),
       ),

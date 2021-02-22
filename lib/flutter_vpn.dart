@@ -1,5 +1,4 @@
-///
-/// Copyright (C) 2018 Jason C.H
+/// Copyright (C) 2018-2020 Jason C.H
 ///
 /// This library is free software; you can redistribute it and/or
 /// modify it under the terms of the GNU Lesser General Public
@@ -10,8 +9,6 @@
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 /// Lesser General Public License for more details.
-///
-
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -25,7 +22,7 @@ enum FlutterVpnState {
   connecting,
   connected,
   disconnecting,
-  genericError
+  genericError,
 }
 
 /// The error state from `VpnStateService`.
@@ -52,16 +49,23 @@ class FlutterVpn {
       .map((e) => FlutterVpnState.values[e]);
 
   /// Get current state.
-  static Future<FlutterVpnState> get currentState async => FlutterVpnState
-      .values[await _channel.invokeMethod<int>('getCurrentState')];
+  static Future<FlutterVpnState> get currentState async {
+    var state = await _channel.invokeMethod<int>('getCurrentState');
+    assert(state != null, 'Received a null state from `getCurrentState` call.');
+    return FlutterVpnState.values[state!];
+  }
 
   /// Get current error state from `VpnStateService`. (Android only)
   /// When [FlutterVpnState.genericError] is received, details of error can be
-  /// inspected by [CharonErrorState].
-  static Future<CharonErrorState> get charonErrorState async {
-    if (!Platform.isAndroid) throw Exception('Unsupport Platform');
+  /// inspected by [CharonErrorState]. Returns [null] on non-android platform.
+  static Future<CharonErrorState?> get charonErrorState async {
+    if (!Platform.isAndroid) return null;
     var state = await _channel.invokeMethod<int>('getCharonErrorState');
-    return CharonErrorState.values[state];
+    assert(
+      state != null,
+      'Received a null state from `getCharonErrorState` call.',
+    );
+    return CharonErrorState.values[state!];
   }
 
   /// Prepare for vpn connection. (Android only)
@@ -70,20 +74,20 @@ class FlutterVpn {
   /// When your connection was interrupted by another VPN connection,
   /// you should prepare again before reconnect.
   ///
-  /// Do nothing in iOS.
+  /// Does nothing on iOS.
   static Future<bool> prepare() async {
     if (!Platform.isAndroid) return true;
-    return await _channel.invokeMethod<bool>('prepare');
+    return (await _channel.invokeMethod<bool>('prepare'))!;
   }
 
   /// Check if vpn connection has been prepared. (Android only)
   static Future<bool> get prepared async {
     if (!Platform.isAndroid) return true;
-    return await _channel.invokeMethod<bool>('prepared');
+    return (await _channel.invokeMethod<bool>('prepared'))!;
   }
 
   /// Disconnect and stop VPN service.
-  static Future<Null> disconnect() async {
+  static Future<void> disconnect() async {
     await _channel.invokeMethod('disconnect');
   }
 
@@ -92,14 +96,21 @@ class FlutterVpn {
   /// Use given credentials to connect VPN (ikev2-eap).
   /// This will create a background VPN service.
   /// MTU is only available on android.
-  static Future<Null> simpleConnect(
-      String address, String username, String password,
-      {int mtu = 1400}) async {
+  static Future<void> simpleConnect(
+    String server,
+    String username,
+    String password, {
+    String? name,
+    int? port,
+    int? mtu,
+  }) async {
     await _channel.invokeMethod('connect', {
-      'address': address,
+      'name': name ?? server,
+      'server': server,
       'username': username,
       'password': password,
-      'mtu': mtu.toString()
+      if (port != null) 'port': port,
+      if (mtu != null) 'mtu': mtu,
     });
   }
 }
