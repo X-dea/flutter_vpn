@@ -19,12 +19,12 @@ buildscript {
 apply plugin: 'de.undercouch.download'
 
 // Download prebuilt native libs.
-task downloadNaticeLib(type: Download) {
+task downloadNativeLib(type: Download) {
     src 'https://github.com/X-dea/Flutter_VPN/releases/download/v0.10.0/strongswan_libs_v5.9.1.zip'
     dest "$buildDir/native.zip"
 }
 
-task getNativeFile(dependsOn: downloadNaticeLib, type: Copy) {
+task getNativeFile(dependsOn: downloadNativeLib, type: Copy) {
     from zipTree("$buildDir/native.zip")
     into "src/main/libs"
 }
