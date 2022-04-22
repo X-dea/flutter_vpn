@@ -8,6 +8,7 @@
         android:label="flutter_vpn_example">
         <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
