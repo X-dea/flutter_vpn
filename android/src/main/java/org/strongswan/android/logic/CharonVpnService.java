@@ -72,7 +72,9 @@ import java.util.SortedSet;
 import java.util.UUID;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
+import io.xdea.flutter_vpn.R;
 
 public class CharonVpnService extends VpnService implements Runnable, VpnStateService.VpnStateListener {
     private static final String TAG = CharonVpnService.class.getSimpleName();
@@ -85,7 +87,7 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
 
     private String mLogFile;
     private String mAppDir;
-    //    private VpnProfileDataSource mDataSource;
+    //private VpnProfileDataSource mDataSource;
     private Thread mConnectionHandler;
     private VpnProfile mCurrentProfile;
     private volatile String mCurrentCertificateAlias;
@@ -143,14 +145,20 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
                     profile.setId(1);
                     profile.setUUID(UUID.randomUUID());
                     profile.setName(bundle.getString("Name"));
+
+                    // Global
+                    profile.setMTU(bundle.getInt("MTU", 1400));
+
+                    // Connection
                     profile.setGateway(bundle.getString("Server"));
-                    if (bundle.containsKey("Port"))
-                        profile.setPort(bundle.getInt("Port"));
+                    if (bundle.containsKey("Port")) profile.setPort(bundle.getInt("Port"));
                     profile.setUsername(bundle.getString("Username"));
                     profile.setPassword(bundle.getString("Password"));
-                    profile.setMTU(bundle.getInt("MTU"));
+                    profile.setLocalId(bundle.getString("LocalId"));
+                    profile.setRemoteId(bundle.getString("RemoteId"));
                     profile.setVpnType(VpnType.fromIdentifier(bundle.getString("VpnType")));
-                    profile.setSelectedAppsHandling(0);
+
+                    profile.setSelectedAppsHandling(SelectedAppsHandling.SELECTED_APPS_DISABLE);
                     profile.setFlags(0);
 
                     retry = bundle.getBoolean(CharonVpnService.KEY_IS_RETRY, false);
@@ -170,7 +178,7 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
         mAppDir = getFilesDir().getAbsolutePath();
 
         /* handler used to do changes in the main UI thread */
-        mHandler = new Handler();
+        mHandler = new Handler(getMainLooper());
 
         /* use a separate thread as main thread for charon */
         mConnectionHandler = new Thread(this);
@@ -344,14 +352,13 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
 
     /**
      * Create a notification channel for Android 8+
-     * TODO: i18n
      */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel;
-            channel = new NotificationChannel(NOTIFICATION_CHANNEL, "VPN connection state",
+            channel = new NotificationChannel(NOTIFICATION_CHANNEL, getString(R.string.permanent_notification_name),
                     NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription("Provides information about the VPN connection state and serves as permanent notification to keep the VPN service running in the background.");
+            channel.setDescription(getString(R.string.permanent_notification_description));
             channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
             channel.setShowBadge(false);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
@@ -362,7 +369,6 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
 
     /**
      * Build a notification matching the current state
-     * TODO: i18n
      */
     private Notification buildNotification(boolean publicVersion) {
         VpnProfile profile = mService.getProfile();
@@ -375,23 +381,20 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
             name = profile.getName();
         }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
-//                .setSmallIcon(R.drawable.ic_notification)
-                .setSmallIcon(androidx.appcompat.R.drawable.abc_ic_star_black_48dp)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setVisibility(publicVersion ? NotificationCompat.VISIBILITY_PUBLIC
                         : NotificationCompat.VISIBILITY_PRIVATE);
-        String s = "No active VPN";
+        int s = R.string.state_disabled;
         if (error != ErrorState.NO_ERROR) {
             s = mService.getErrorText();
-//            builder.setSmallIcon(R.drawable.ic_notification_warning);
-            builder.setSmallIcon(androidx.appcompat.R.drawable.abc_ic_star_black_48dp);
-//            builder.setColor(ContextCompat.getColor(this, R.color.error_text));
-            builder.setColor(0xFFD9192C);
+            builder.setSmallIcon(R.drawable.ic_notification_warning);
+            builder.setColor(ContextCompat.getColor(this, R.color.error_text));
 
             if (!publicVersion && profile != null) {
                 int retry = mService.getRetryIn();
                 if (retry > 0) {
-                    builder.setContentText("Retry in " + retry + " seconds");
+                    builder.setContentText(getResources().getQuantityString(R.plurals.retry_in, retry, retry));
                     builder.setProgress(mService.getRetryTimeout(), retry, false);
                 }
 
@@ -409,24 +412,23 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
 
             switch (state) {
                 case CONNECTING:
-                    s = "Connecting...";
-//                    builder.setSmallIcon(R.drawable.ic_notification_connecting);
-                    builder.setSmallIcon(androidx.appcompat.R.drawable.abc_ic_star_black_48dp);
-                    builder.setColor(0xFFFF9909);
+                    s = R.string.state_connecting;
+                    builder.setSmallIcon(R.drawable.ic_notification_connecting);
+                    builder.setColor(ContextCompat.getColor(this, R.color.warning_text));
                     add_action = true;
                     break;
                 case CONNECTED:
-                    s = "Connected";
-                    builder.setColor(0xFF99CC00);
+                    s = R.string.state_connected;
+                    builder.setColor(ContextCompat.getColor(this, R.color.success_text));
                     builder.setUsesChronometer(true);
                     add_action = true;
                     break;
                 case DISCONNECTING:
-                    s = "Disconnecting...";
+                    s = R.string.state_disconnecting;
                     break;
             }
         }
-        builder.setContentTitle(s);
+        builder.setContentTitle(getString(s));
         if (!publicVersion) {
 //            if (add_action) {
 //                Intent intent = new Intent(getApplicationContext(), VpnProfileControlActivity.class);
@@ -706,6 +708,11 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
         private VpnService.Builder createBuilder(String name) {
             VpnService.Builder builder = new CharonVpnService.Builder();
             builder.setSession(name);
+
+            /* mark all VPN connections as unmetered (default changed for Android 10) */
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                builder.setMetered(false);
+            }
             return builder;
         }
 

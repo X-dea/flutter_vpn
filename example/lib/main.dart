@@ -1,4 +1,4 @@
-/// Copyright (C) 2018-2020 Jason C.H
+/// Copyright (C) 2018-2022 Jason C.H
 ///
 /// This library is free software; you can redistribute it and/or
 /// modify it under the terms of the GNU Lesser General Public
@@ -11,12 +11,15 @@
 /// Lesser General Public License for more details.
 import 'package:flutter/material.dart';
 import 'package:flutter_vpn/flutter_vpn.dart';
+import 'package:flutter_vpn/state.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -42,44 +45,46 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Flutter VPN'),
         ),
         body: ListView(
-          padding: const EdgeInsets.all(15.0),
+          padding: const EdgeInsets.all(12),
           children: <Widget>[
             Text('Current State: $state'),
             Text('Current Charon State: $charonState'),
             TextFormField(
               controller: _addressController,
-              decoration: InputDecoration(icon: Icon(Icons.map)),
+              decoration: const InputDecoration(icon: Icon(Icons.map_outlined)),
             ),
             TextFormField(
               controller: _usernameController,
-              decoration: InputDecoration(icon: Icon(Icons.person_outline)),
+              decoration: const InputDecoration(
+                icon: Icon(Icons.person_outline),
+              ),
             ),
             TextFormField(
               controller: _passwordController,
               obscureText: true,
-              decoration: InputDecoration(icon: Icon(Icons.lock_outline)),
+              decoration: const InputDecoration(icon: Icon(Icons.lock_outline)),
             ),
             ElevatedButton(
-              child: Text('Connect'),
-              onPressed: () => FlutterVpn.simpleConnect(
-                _addressController.text,
-                _usernameController.text,
-                _passwordController.text,
+              child: const Text('Connect'),
+              onPressed: () => FlutterVpn.connectIkev2EAP(
+                server: _addressController.text,
+                username: _usernameController.text,
+                password: _passwordController.text,
               ),
             ),
             ElevatedButton(
-              child: Text('Disconnect'),
+              child: const Text('Disconnect'),
               onPressed: () => FlutterVpn.disconnect(),
             ),
             ElevatedButton(
-              child: Text('Update State'),
+              child: const Text('Update State'),
               onPressed: () async {
                 var newState = await FlutterVpn.currentState;
                 setState(() => state = newState);
               },
             ),
             ElevatedButton(
-              child: Text('Update Charon State'),
+              child: const Text('Update Charon State'),
               onPressed: () async {
                 var newState = await FlutterVpn.charonErrorState;
                 setState(() => charonState = newState);

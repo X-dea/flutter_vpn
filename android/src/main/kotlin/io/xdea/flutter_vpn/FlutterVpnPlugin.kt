@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2018-2020 Jason C.H
+ * Copyright (C) 2018-2022 Jason C.H
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ import android.net.VpnService
 import android.os.Bundle
 import android.os.IBinder
 import androidx.annotation.NonNull
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -31,10 +32,9 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import org.strongswan.android.logic.VpnStateService
 import io.flutter.plugin.common.PluginRegistry
+import org.strongswan.android.logic.VpnStateService
 
-/** FlutterVpnPlugin */
 class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var activityBinding: ActivityPluginBinding
 
@@ -46,7 +46,7 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var eventChannel: EventChannel
 
     private var vpnStateService: VpnStateService? = null
-    private val _serviceConnection = object : ServiceConnection {
+    private val vpnStateServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             vpnStateService = (service as VpnStateService.LocalBinder).service
             VpnStateHandler.vpnStateService = vpnStateService
@@ -65,16 +65,16 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
 
         // Register method channel.
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_vpn")
-        channel.setMethodCallHandler(this);
+        channel.setMethodCallHandler(this)
 
         // Register event channel to handle state change.
         eventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "flutter_vpn_states")
         eventChannel.setStreamHandler(VpnStateHandler)
 
         flutterPluginBinding.applicationContext.bindService(
-                Intent(flutterPluginBinding.applicationContext, VpnStateService::class.java),
-                _serviceConnection,
-                Service.BIND_AUTO_CREATE
+            Intent(flutterPluginBinding.applicationContext, VpnStateService::class.java),
+            vpnStateServiceConnection,
+            Service.BIND_AUTO_CREATE
         )
     }
 
@@ -83,7 +83,6 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         eventChannel.setStreamHandler(null)
     }
 
-
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activityBinding = binding
     }
@@ -91,11 +90,11 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onDetachedFromActivity() {
     }
 
-    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        activityBinding = binding
+    override fun onDetachedFromActivityForConfigChanges() {
     }
 
-    override fun onDetachedFromActivityForConfigChanges() {
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activityBinding = binding
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -105,18 +104,14 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 if (intent != null) {
                     var listener: PluginRegistry.ActivityResultListener? = null
                     listener = PluginRegistry.ActivityResultListener { req, res, _ ->
-                        if (req == 0 && res == RESULT_OK) {
-                            result.success(true)
-                        } else {
-                            result.success(false)
-                        }
-                        listener?.let { activityBinding.removeActivityResultListener(it) };
+                        result.success(req == 0 && res == RESULT_OK)
+                        listener?.let { activityBinding.removeActivityResultListener(it) }
                         true
                     }
                     activityBinding.addActivityResultListener(listener)
                     activityBinding.activity.startActivityForResult(intent, 0)
                 } else {
-                    // If intent is null, already prepared
+                    // Already prepared if intent is null.
                     result.success(true)
                 }
             }
@@ -127,22 +122,21 @@ class FlutterVpnPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             "connect" -> {
                 val intent = VpnService.prepare(activityBinding.activity.applicationContext)
                 if (intent != null) {
-                    // Not prepared yet
+                    // Not prepared yet.
                     result.success(false)
                     return
                 }
 
-                val map = call.arguments as HashMap<*, *>
+                val args = call.arguments as Map<*, *>
 
                 val profileInfo = Bundle()
                 profileInfo.putString("VpnType", "ikev2-eap")
-                profileInfo.putString("Name", map["name"] as String)
-                profileInfo.putString("Server", map["server"] as String)
-                profileInfo.putString("Username", map["username"] as String)
-                profileInfo.putString("Password", map["password"] as String)
-                profileInfo.putInt("MTU", map["mtu"] as? Int ?: 1400)
-                if (map.containsKey("port"))
-                    profileInfo.putInt("Port", map["port"] as Int)
+                profileInfo.putString("Name", args["Name"] as String)
+                profileInfo.putString("Server", args["Server"] as String)
+                profileInfo.putString("Username", args["Username"] as String)
+                profileInfo.putString("Password", args["Password"] as String)
+                if (args.containsKey("MTU"))  profileInfo.putInt("MTU", args["MTU"] as Int)
+                if (args.containsKey("port")) profileInfo.putInt("Port", args["Port"] as Int)
 
                 vpnStateService?.connect(profileInfo, true)
                 result.success(true)

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (C) 2012-2020 Tobias Brunner
+    Copyright (C) 2012 Giuliano Grassi
+    Copyright (C) 2012 Ralf Sager
+    HSR Hochschule fuer Technik Rapperswil
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+-->
+<resources>
+    <!-- Application -->
+    <string name="permanent_notification_name">VPN connection state</string>
+    <string name="permanent_notification_description">Provides information about the VPN connection state and serves as permanent notification to keep the VPN service running in the background.</string>
+
+    <!-- VPN state fragment -->
+    <string name="state_connecting">Connecting&#8230;</string>
+    <string name="state_connected">Connected</string>
+    <string name="state_disconnecting">Disconnecting&#8230;</string>
+    <string name="state_disabled">No active VPN</string>
+
+    <!-- Dialogs -->
+    <string name="error_lookup_failed">Server address lookup failed</string>
+    <string name="error_unreachable">Server is unreachable</string>
+    <string name="error_peer_auth_failed">Verifying server authentication failed</string>
+    <string name="error_auth_failed">User authentication failed</string>
+    <string name="error_assessment_failed">Security assessment failed</string>
+    <string name="error_generic">Unspecified failure while connecting</string>
+    <string name="error_password_missing">Password unavailable</string>
+    <string name="error_certificate_unavailable">Client certificate unavailable</string>
+    <plurals name="retry_in">
+        <item quantity="one">Retry in %1$d second</item>
+        <item quantity="other">Retry in %1$d seconds</item>
+    </plurals>
+</resources>

@@ -1,3 +1,9 @@
+## 0.12.0
+
+- Upgrade to StrongSwan 5.9.5.
+- Fix crash on Android release build.
+- Migrate to federated plugin.
+
 ## 0.10.0
 - Upgrade to StrongSwan 5.9.0.
 - Fix typo in event channel.

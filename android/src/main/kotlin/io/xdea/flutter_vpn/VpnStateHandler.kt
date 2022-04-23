@@ -26,7 +26,7 @@ import org.strongswan.android.logic.VpnStateService
 	CONNECTING = 1;
 	CONNECTED = 2;
 	DISCONNECTING = 3;
-	GENERIC_ERROR = 4;
+	ERROR = 4;
 
 	Charon error states.
 	Details of error when state shows GENERIC_ERROR.

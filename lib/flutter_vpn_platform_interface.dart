@@ -9,58 +9,71 @@
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 /// Lesser General Public License for more details.
-import 'flutter_vpn_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+import 'flutter_vpn_method_channel.dart';
 import 'state.dart';
 
-class FlutterVpn {
+abstract class FlutterVpnPlatform extends PlatformInterface {
+  /// Constructs a FlutterVpnPlatform.
+  FlutterVpnPlatform() : super(token: _token);
+
+  static final Object _token = Object();
+
+  static FlutterVpnPlatform _instance = MethodChannelFlutterVpn();
+
+  /// The default instance of [FlutterVpnPlatform] to use.
+  ///
+  /// Defaults to [MethodChannelFlutterVpn].
+  static FlutterVpnPlatform get instance => _instance;
+
+  /// Platform-specific implementations should set this with their own
+  /// platform-specific class that extends [FlutterVpnPlatform] when
+  /// they register themselves.
+  static set instance(FlutterVpnPlatform instance) {
+    PlatformInterface.verifyToken(instance, _token);
+    _instance = instance;
+  }
+
   /// Receive state change from VPN service.
   ///
   /// Can only be listened once. If have more than one subscription, only the
   /// last subscription can receive events.
-  static Stream<FlutterVpnState> get onStateChanged =>
-      FlutterVpnPlatform.instance.onStateChanged;
+  Stream<FlutterVpnState> get onStateChanged => throw UnimplementedError();
 
   /// Get current state.
-  static Future<FlutterVpnState> get currentState =>
-      FlutterVpnPlatform.instance.currentState;
+  Future<FlutterVpnState> get currentState async => throw UnimplementedError();
 
   /// Get current error state from `VpnStateService`. (Android only)
   /// When [FlutterVpnState.error] is received, details of error can be
   /// inspected by [CharonErrorState]. Returns [null] on non-android platform.
-  static Future<CharonErrorState?> get charonErrorState =>
-      FlutterVpnPlatform.instance.charonErrorState;
+  Future<CharonErrorState?> get charonErrorState async =>
+      throw UnimplementedError();
 
   /// Prepare for vpn connection. (Android only)
   ///
   /// For first connection it will show a dialog to ask for permission.
   /// When your connection was interrupted by another VPN connection,
   /// you should prepare again before reconnect.
-  static Future<bool> prepare() => FlutterVpnPlatform.instance.prepare();
+  Future<bool> prepare() async => throw UnimplementedError();
 
   /// Check if vpn connection has been prepared. (Android only)
-  static Future<bool> get prepared => FlutterVpnPlatform.instance.prepared;
+  Future<bool> get prepared async => throw UnimplementedError();
 
   /// Disconnect and stop VPN service.
-  static Future<void> disconnect() => FlutterVpnPlatform.instance.disconnect();
+  Future<void> disconnect() async => throw UnimplementedError();
 
   /// Connect to VPN. (IKEv2-EAP)
   ///
   /// This will create a background VPN service.
   /// MTU is only available on android.
-  static Future<void> connectIkev2EAP({
+  Future<void> connectIkev2EAP({
     required String server,
     required String username,
     required String password,
     String? name,
     int? mtu,
     int? port,
-  }) =>
-      FlutterVpnPlatform.instance.connectIkev2EAP(
-        server: server,
-        username: username,
-        password: password,
-        name: name,
-        mtu: mtu,
-        port: port,
-      );
+  }) async =>
+      throw UnimplementedError();
 }

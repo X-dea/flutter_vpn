@@ -22,6 +22,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 
@@ -37,6 +38,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import androidx.core.content.ContextCompat;
+
+import io.xdea.flutter_vpn.R;
 
 public class VpnStateService extends Service {
     private final HashSet<VpnStateListener> mListeners = new HashSet<VpnStateListener>();
@@ -97,7 +100,7 @@ public class VpnStateService extends Service {
     public void onCreate() {
         /* this handler allows us to notify listeners from the UI thread and
          * not from the threads that actually report any state changes */
-        mHandler = new RetryHandler(this);
+        mHandler = new RetryHandler(getMainLooper(), this);
     }
 
     @Override
@@ -187,30 +190,29 @@ public class VpnStateService extends Service {
 
     /**
      * Get a description of the current error, if any.
-     * TODO: i18n
      *
-     * @return error description text
+     * @return error description text id
      */
-    public String getErrorText() {
+    public int getErrorText() {
         switch (mError) {
             case AUTH_FAILED:
                 if (mImcState == ImcState.BLOCK) {
-                    return "Security assessment failed";
+                    return R.string.error_assessment_failed;
                 } else {
-                    return "User authentication failed";
+                    return R.string.error_auth_failed;
                 }
             case PEER_AUTH_FAILED:
-                return "Verifying server authentication failed";
+                return R.string.error_peer_auth_failed;
             case LOOKUP_FAILED:
-                return "Server address lookup failed";
+                return R.string.error_lookup_failed;
             case UNREACHABLE:
-                return "Server is unreachable";
+                return R.string.error_unreachable;
             case PASSWORD_MISSING:
-                return "Password unavailable";
+                return R.string.error_password_missing;
             case CERTIFICATE_UNAVAILABLE:
-                return "Client certificate unavailable";
+                return R.string.error_certificate_unavailable;
             default:
-                return "Unspecified failure while connecting";
+                return R.string.error_generic;
         }
     }
 
@@ -279,7 +281,6 @@ public class VpnStateService extends Service {
         intent.putExtras(profileInfo);
         ContextCompat.startForegroundService(context, intent);
     }
-
 
     /**
      * Update state and notify all listeners about the change. By using a Handler
@@ -448,7 +449,8 @@ public class VpnStateService extends Service {
     private static class RetryHandler extends Handler {
         WeakReference<VpnStateService> mService;
 
-        public RetryHandler(VpnStateService service) {
+        public RetryHandler(Looper looper, VpnStateService service) {
+            super(looper);
             mService = new WeakReference<>(service);
         }
 
