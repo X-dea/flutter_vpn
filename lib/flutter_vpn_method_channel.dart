@@ -32,9 +32,8 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
   /// Can only be listened once. If have more than one subscription, only the
   /// last subscription can receive events.
   @override
-  Stream<FlutterVpnState> get onStateChanged => eventChannel
-      .receiveBroadcastStream()
-      .map((e) => FlutterVpnState.values[e]);
+  Stream<FlutterVpnState> get onStateChanged =>
+      eventChannel.receiveBroadcastStream().map((e) => FlutterVpnState.values[e]);
 
   /// Get current state.
   @override
@@ -96,10 +95,37 @@ class MethodChannelFlutterVpn extends FlutterVpnPlatform {
     int? port,
   }) async =>
       await methodChannel.invokeMethod('connect', {
-        'Name': name ?? server,
+        'Type': 'IKEv2',
         'Server': server,
         'Username': username,
         'Password': password,
+        'Secret': '',
+        'Name': name ?? server,
+        if (mtu != null) 'mtu': mtu,
+        if (port != null) 'port': port,
+      });
+
+  /// Connect to VPN. (IPSec)
+  ///
+  /// This will create a background VPN service.
+  /// Android implementation is not available.
+  @override
+  Future<void> connectIPSec({
+    required String server,
+    required String username,
+    required String password,
+    required String secret,
+    String? name,
+    int? mtu,
+    int? port,
+  }) async =>
+      await methodChannel.invokeMethod('connect', {
+        'Type': 'IPSec',
+        'Server': server,
+        'Username': username,
+        'Password': password,
+        'Secret': secret,
+        'Name': name ?? server,
         if (mtu != null) 'mtu': mtu,
         if (port != null) 'port': port,
       });
