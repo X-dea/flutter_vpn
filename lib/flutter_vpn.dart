@@ -17,18 +17,15 @@ class FlutterVpn {
   ///
   /// Can only be listened once. If have more than one subscription, only the
   /// last subscription can receive events.
-  static Stream<FlutterVpnState> get onStateChanged =>
-      FlutterVpnPlatform.instance.onStateChanged;
+  static Stream<FlutterVpnState> get onStateChanged => FlutterVpnPlatform.instance.onStateChanged;
 
   /// Get current state.
-  static Future<FlutterVpnState> get currentState =>
-      FlutterVpnPlatform.instance.currentState;
+  static Future<FlutterVpnState> get currentState => FlutterVpnPlatform.instance.currentState;
 
   /// Get current error state from `VpnStateService`. (Android only)
   /// When [FlutterVpnState.error] is received, details of error can be
   /// inspected by [CharonErrorState]. Returns [null] on non-android platform.
-  static Future<CharonErrorState?> get charonErrorState =>
-      FlutterVpnPlatform.instance.charonErrorState;
+  static Future<CharonErrorState?> get charonErrorState => FlutterVpnPlatform.instance.charonErrorState;
 
   /// Prepare for vpn connection. (Android only)
   ///
@@ -59,6 +56,29 @@ class FlutterVpn {
         server: server,
         username: username,
         password: password,
+        name: name,
+        mtu: mtu,
+        port: port,
+      );
+
+  /// Connect to VPN. (IPSec)
+  ///
+  /// This will create a background VPN service.
+  /// Android implementation is not available.
+  static Future<void> connectIPSec({
+    required String server,
+    required String username,
+    required String password,
+    required String secret,
+    String? name,
+    int? mtu,
+    int? port,
+  }) async =>
+      FlutterVpnPlatform.instance.connectIPSec(
+        server: server,
+        username: username,
+        password: password,
+        secret: secret,
         name: name,
         mtu: mtu,
         port: port,

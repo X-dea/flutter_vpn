@@ -16,156 +16,250 @@ import Foundation
 import NetworkExtension
 import Security
 
-// Identifiers
-let serviceIdentifier = "MySerivice"
-let userAccount = "authenticatedUser"
-let accessGroup = "MySerivice"
 
-// Arguments for the keychain queries
-var kSecAttrAccessGroupSwift = NSString(format: kSecClass)
-
-let kSecClassValue = kSecClass as CFString
-let kSecAttrAccountValue = kSecAttrAccount as CFString
-let kSecValueDataValue = kSecValueData as CFString
-let kSecClassGenericPasswordValue = kSecClassGenericPassword as CFString
-let kSecAttrServiceValue = kSecAttrService as CFString
-let kSecMatchLimitValue = kSecMatchLimit as CFString
-let kSecReturnDataValue = kSecReturnData as CFString
-let kSecMatchLimitOneValue = kSecMatchLimitOne as CFString
-let kSecAttrGenericValue = kSecAttrGeneric as CFString
-let kSecAttrAccessibleValue = kSecAttrAccessible as CFString
-
-class KeychainService: NSObject {
-    func save(key: String, value: String) {
-        let keyData: Data = key.data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue), allowLossyConversion: false)!
-        let valueData: Data = value.data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue), allowLossyConversion: false)!
-
-        let keychainQuery = NSMutableDictionary()
-        keychainQuery[kSecClassValue as! NSCopying] = kSecClassGenericPasswordValue
-        keychainQuery[kSecAttrGenericValue as! NSCopying] = keyData
-        keychainQuery[kSecAttrAccountValue as! NSCopying] = keyData
-        keychainQuery[kSecAttrServiceValue as! NSCopying] = "VPN"
-        keychainQuery[kSecAttrAccessibleValue as! NSCopying] = kSecAttrAccessibleAlwaysThisDeviceOnly
-        keychainQuery[kSecValueData as! NSCopying] = valueData
-        // Delete any existing items
-        SecItemDelete(keychainQuery as CFDictionary)
-        SecItemAdd(keychainQuery as CFDictionary, nil)
-    }
-
-    func load(key: String) -> Data {
-        let keyData: Data = key.data(using: String.Encoding(rawValue: String.Encoding.utf8.rawValue), allowLossyConversion: false)!
-        let keychainQuery = NSMutableDictionary()
-        keychainQuery[kSecClassValue as! NSCopying] = kSecClassGenericPasswordValue
-        keychainQuery[kSecAttrGenericValue as! NSCopying] = keyData
-        keychainQuery[kSecAttrAccountValue as! NSCopying] = keyData
-        keychainQuery[kSecAttrServiceValue as! NSCopying] = "VPN"
-        keychainQuery[kSecAttrAccessibleValue as! NSCopying] = kSecAttrAccessibleAlwaysThisDeviceOnly
-        keychainQuery[kSecMatchLimit] = kSecMatchLimitOne
-        keychainQuery[kSecReturnPersistentRef] = kCFBooleanTrue
-
-        var result: AnyObject?
-        let status = withUnsafeMutablePointer(to: &result) { SecItemCopyMatching(keychainQuery, UnsafeMutablePointer($0)) }
-
-        if status == errSecSuccess {
-            if let data = result as! NSData? {
-                if let value = NSString(data: data as Data, encoding: String.Encoding.utf8.rawValue) {}
-                return data as Data
-            }
-        }
-        return "".data(using: .utf8)!
-    }
+enum FlutterVpnState: Int {
+    case disconnected = 0;
+    case connecting = 1;
+    case connected = 2;
+    case disconnecting = 3;
+    case error = 4;
 }
 
-@available(iOS 9.0, *)
-func connectVPN(result: FlutterResult, usrname: NSString, pwd: NSString, add: NSString) {
-    let vpnManager = NEVPNManager.shared()
+
+class VpnService {
+    // MARK: - Singleton
+    static let shared: VpnService = {
+        let instance = VpnService()
+        return instance
+    }()
+
+
+    // MARK: - Few variables
+    var vpnManager: NEVPNManager {
+        get {
+            return NEVPNManager.shared()
+        }
+    }
+    var vpnStatus: NEVPNStatus {
+        get {
+            return vpnManager.connection.status
+        }
+    }
     let kcs = KeychainService()
-    result(nil)
+    var configurationSaved = false
 
-    vpnManager.loadFromPreferences { (error) -> Void in
 
-        if error != nil {
-            print("VPN Preferences error: 1")
-            VPNStateHandler.updateState(4)
-        } else {
-            VPNStateHandler.updateState(1)
-            let p = NEVPNProtocolIKEv2()
+    // MARK: - Init
+    init() {
+        NotificationCenter.default.addObserver(forName: NSNotification.Name.NEVPNStatusDidChange, object: nil, queue: OperationQueue.main, using: statusChanged)
+    }
 
-            p.username = usrname as String
-            p.remoteIdentifier = add as String
-            p.serverAddress = add as String
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 
-            kcs.save(key: "password", value: pwd as String)
-            p.passwordReference = kcs.load(key: "password")
-            p.authenticationMethod = NEVPNIKEAuthenticationMethod.none
 
-            p.useExtendedAuthentication = true
-            p.disconnectOnSleep = false
+    // MARK: - Methods
+    @available(iOS 9.0, *)
+    func connect(
+        result: FlutterResult,
+        type: String,
+        server: String,
+        username: String,
+        password: String,
+        secret: String?,
+        description: String?
+    ) {
+        vpnManager.loadFromPreferences { (error) -> Void in
+            guard error == nil else {
+                let msg = "VPN Preferences error: \(error!.localizedDescription)"
+                debugPrint(msg)
+                VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: msg)
+                return;
+            }
 
-            vpnManager.protocolConfiguration = p
-            vpnManager.isEnabled = true
+            let passwordKey = "vpn_\(type)_password"
+            let secretKey = "vpn_\(type)_secret"
+            self.kcs.save(key: passwordKey, value: password)
+            if let secret = secret {
+                self.kcs.save(key: secretKey, value: secret)
+            }
 
-            vpnManager.saveToPreferences(completionHandler: { (error) -> Void in
-                if error != nil {
-                    print("VPN Preferences error: 2")
-                    VPNStateHandler.updateState(4)
-                } else {
-                    vpnManager.loadFromPreferences(completionHandler: { error in
+            if (type == "IPSec") {
+                let p = NEVPNProtocolIPSec()
+                p.serverAddress = server
+                p.username = username
+                p.passwordReference = self.kcs.load(key: passwordKey)
 
-                        if error != nil {
-                            print("VPN Preferences error: 2")
-                            VPNStateHandler.updateState(4)
-                        } else {
-                            var startError: NSError?
-
-                            do {
-                                try vpnManager.connection.startVPNTunnel()
-                            } catch let error as NSError {
-                                startError = error
-                                VPNStateHandler.updateState(4)
-                                print(startError)
-                            } catch {
-                                print("Fatal Error")
-                                fatalError()
-                            }
-                            if startError != nil {
-                                print("VPN Preferences error: 3")
-                                print(startError)
-                            } else {
-                                print("VPN started successfully..")
-                                VPNStateHandler.updateState(2)
-                            }
-                        }
-                    })
+                p.authenticationMethod = NEVPNIKEAuthenticationMethod.sharedSecret
+                if secret != nil {
+                    p.sharedSecretReference = self.kcs.load(key: secretKey)
                 }
+
+                p.localIdentifier = ""
+                p.remoteIdentifier = ""
+
+                p.useExtendedAuthentication = true
+                p.disconnectOnSleep = false
+                self.vpnManager.protocolConfiguration = p
+            } else {
+                let p = NEVPNProtocolIKEv2()
+                p.username = username
+                p.remoteIdentifier = server
+                p.serverAddress = server
+
+                p.passwordReference = self.kcs.load(key: passwordKey)
+                p.authenticationMethod = NEVPNIKEAuthenticationMethod.none
+
+                p.useExtendedAuthentication = true
+                p.disconnectOnSleep = false
+                self.vpnManager.protocolConfiguration = p
+            }
+
+            self.vpnManager.localizedDescription = description
+            self.vpnManager.isOnDemandEnabled = false
+            self.vpnManager.isEnabled = true
+
+            self.vpnManager.saveToPreferences(completionHandler: { (error) -> Void in
+                guard error == nil else {
+                    let msg = "VPN Preferences error: \(error!.localizedDescription)"
+                    debugPrint(msg)
+                    VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: msg)
+                    return;
+                }
+
+                self.vpnManager.loadFromPreferences(completionHandler: { error in
+                    guard error == nil else {
+                        let msg = "VPN Preferences error: \(error!.localizedDescription)"
+                        debugPrint(msg)
+                        VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: msg)
+                        return;
+
+                    }
+
+                    self.configurationSaved = true
+                    self.startTunnel()
+                })
             })
         }
+        result(nil)
     }
-}
 
-func stopVPN(result: FlutterResult) {
-    let vpnManager = NEVPNManager.shared()
-    result(nil)
-    VPNStateHandler.updateState(3)
-    vpnManager.connection.stopVPNTunnel()
-    VPNStateHandler.updateState(0)
-}
+    func startTunnel() {
+        do {
+            try self.vpnManager.connection.startVPNTunnel()
+        } catch let error as NSError {
+            var errorStr = ""
+            switch error {
+            case NEVPNError.configurationDisabled:
+                errorStr = "The VPN configuration associated with the NEVPNManager is disabled."
+                break
+            case NEVPNError.configurationInvalid:
+                errorStr = "The VPN configuration associated with the NEVPNManager object is invalid."
+                break
+            case NEVPNError.configurationReadWriteFailed:
+                errorStr = "An error occurred while reading or writing the Network Extension preferences."
+                break
+            case NEVPNError.configurationStale:
+                errorStr = "The VPN configuration associated with the NEVPNManager object was modified by some other process since the last time that it was loaded from the Network Extension preferences by the app."
+                break
+            case NEVPNError.configurationUnknown:
+                errorStr = "An unspecified error occurred."
+                break
+            case NEVPNError.connectionFailed:
+                errorStr = "The connection to the VPN server failed."
+                break
+            default:
+                errorStr = "Unknown error: \(error.localizedDescription)"
+                break
+            }
 
-func getVPNState(result: FlutterResult) {
-    let vpnManager = NEVPNManager.shared()
-    let status = vpnManager.connection.status
-    switch status {
-    case .connecting:
-        result(1)
-    case .connected:
-        result(2)
-    case .disconnecting:
-        result(3)
-    case .disconnected:
-        result(0)
-    case .invalid:
-        result(0)
-    case .reasserting:
-        result(4)
+            let msg = "Start error: \(errorStr)"
+            debugPrint(msg)
+            VPNStateHandler.updateState(FlutterVpnState.error.rawValue, errorMessage: msg)
+            return;
+        }
+    }
+
+    func reconnect(result: FlutterResult) {
+        guard self.configurationSaved == true else {
+            result(FlutterError(code: "-1",
+                                message: "Configuration is not yet saved",
+                                details: nil))
+            return
+        }
+
+        result(nil)
+    }
+
+    func disconnect(result: FlutterResult) {
+        vpnManager.connection.stopVPNTunnel()
+        result(nil)
+    }
+
+    func getState(result: FlutterResult) {
+        switch vpnStatus {
+        case .connecting:
+            result(FlutterVpnState.connecting.rawValue)
+            break
+        case .connected:
+            result(FlutterVpnState.connected.rawValue)
+            break
+        case .disconnecting:
+            result(FlutterVpnState.disconnecting.rawValue)
+            break
+        case .disconnected:
+            result(FlutterVpnState.disconnected.rawValue)
+            break
+        case .invalid:
+            result(FlutterVpnState.error.rawValue)
+            break
+        case .reasserting:
+            result(FlutterVpnState.connecting.rawValue)
+            break
+        @unknown default:
+            debugPrint("Unknown switch statement: \(vpnStatus)")
+            break
+        }
+    }
+
+
+    // MARK: - Event callbacks
+    func statusChanged(_: Notification?) {
+        switch vpnStatus {
+        case .connected:
+            UIApplication.shared.isNetworkActivityIndicatorVisible = false
+            VPNStateHandler.updateState(FlutterVpnState.connected.rawValue)
+            break
+
+        case .disconnected:
+            UIApplication.shared.isNetworkActivityIndicatorVisible = false
+            VPNStateHandler.updateState(FlutterVpnState.disconnected.rawValue)
+            break
+
+        case .connecting:
+            UIApplication.shared.isNetworkActivityIndicatorVisible = true
+            VPNStateHandler.updateState(FlutterVpnState.connecting.rawValue)
+            break
+
+        case .disconnecting:
+            UIApplication.shared.isNetworkActivityIndicatorVisible = true
+            VPNStateHandler.updateState(FlutterVpnState.disconnecting.rawValue)
+            break
+
+        case .invalid:
+            UIApplication.shared.isNetworkActivityIndicatorVisible = false
+            VPNStateHandler.updateState(FlutterVpnState.error.rawValue)
+            break
+
+        case .reasserting:
+            UIApplication.shared.isNetworkActivityIndicatorVisible = true
+            VPNStateHandler.updateState(FlutterVpnState.connecting.rawValue)
+            break
+
+        @unknown default:
+            debugPrint("Unknown switch statement: \(vpnStatus)")
+            break
+        }
     }
 }
