@@ -56,6 +56,7 @@ import org.strongswan.android.utils.Utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -63,7 +64,10 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.security.PrivateKey;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -619,6 +623,21 @@ public class CharonVpnService extends VpnService implements Runnable, VpnStateSe
             } else {
                 for (X509Certificate cert : certman.getAllCACertificates().values()) {
                     certs.add(cert.getEncoded());
+                }
+                if(Build.VERSION.SDK_INT<Build.VERSION_CODES.O){
+                    try {
+                        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                        getApplicationContext().getAssets().open("rootx1.cer");
+                        InputStream fis = getApplicationContext().getAssets().open("rootx1.cer");
+                        Certificate c = cf.generateCertificate(fis);
+                        X509Certificate t = (X509Certificate)c;
+                        certs.add(t.getEncoded());
+                        fis.close();
+                    } catch (CertificateException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (CertificateEncodingException e) {
