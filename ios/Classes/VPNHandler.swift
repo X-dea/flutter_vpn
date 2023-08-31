@@ -228,32 +228,26 @@ class VpnService {
     func statusChanged(_: Notification?) {
         switch vpnStatus {
         case .connected:
-            UIApplication.shared.isNetworkActivityIndicatorVisible = false
             VPNStateHandler.updateState(FlutterVpnState.connected.rawValue)
             break
 
         case .disconnected:
-            UIApplication.shared.isNetworkActivityIndicatorVisible = false
             VPNStateHandler.updateState(FlutterVpnState.disconnected.rawValue)
             break
 
         case .connecting:
-            UIApplication.shared.isNetworkActivityIndicatorVisible = true
             VPNStateHandler.updateState(FlutterVpnState.connecting.rawValue)
             break
 
         case .disconnecting:
-            UIApplication.shared.isNetworkActivityIndicatorVisible = true
             VPNStateHandler.updateState(FlutterVpnState.disconnecting.rawValue)
             break
 
         case .invalid:
-            UIApplication.shared.isNetworkActivityIndicatorVisible = false
             VPNStateHandler.updateState(FlutterVpnState.error.rawValue)
             break
 
         case .reasserting:
-            UIApplication.shared.isNetworkActivityIndicatorVisible = true
             VPNStateHandler.updateState(FlutterVpnState.connecting.rawValue)
             break
 
