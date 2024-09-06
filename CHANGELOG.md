@@ -1,3 +1,8 @@
+## 0.13.0
+
+- Fix crash on Android under SDK34
+- Support IPSec on iOS
+
 ## 0.12.0
 
 - Upgrade to StrongSwan 5.9.5.
